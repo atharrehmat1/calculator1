@@ -1,0 +1,74 @@
+services:
+  # NOTE: PostgreSQL Database already exists as "Calculator1"
+  # Skip creating a new database - use existing one and set DB_* variables manually
+  
+  # PostgreSQL Database (OPTIONAL - only if creating new database)
+  # Uncomment if you want Render to create a new database
+  # - type: pg
+  #   name: calculator-db
+  #   plan: free
+  #   region: oregon
+  #   databaseName: calculator_db
+  #   user: calculator_user
+
+  # Backend API Service (Express.js)
+  - type: web
+    name: backend-api
+    env: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    nodeVersion: 20
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        generateValue: true
+      # Database connection - Update with your actual database name
+      # If using existing database "Calculator1", set these manually in Render Dashboard
+      - key: DB_USER
+        value: calculator_db_9475_user
+        sync: false  # Set manually in dashboard
+      - key: DB_HOST
+        value: dpg-d4f287gdl3ps73cl4cp0-a
+        sync: false  # Set manually in dashboard
+      - key: DB_NAME
+        value: calculator_db_9475
+        sync: false  # Set manually in dashboard
+      - key: DB_PASSWORD
+        value: FIgfkUs2NBk1e3bnM3mbTGxoa2z7CCGq
+        sync: false  # Set manually in dashboard (recommended for security)
+      - key: DB_PORT
+        value: "5432"
+      - key: SESSION_SECRET
+        generateValue: true
+      # Frontend URLs for CORS - Update after frontend deployment
+      - key: FRONTEND_URL
+        value: https://nextjs-app.onrender.com
+        sync: false  # Update after frontend deploys
+
+  # Frontend Next.js App
+  - type: web
+    name: nextjs-app
+    env: node
+    plan: free  # Change to 'starter' or 'standard' for paid plans
+    region: oregon  # Change to your preferred region
+    rootDir: Frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    nodeVersion: 20  # Next.js 15 requires Node 18+, using 20 for LTS
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        generateValue: true
+      # Backend API URL - Update with your actual backend URL after deployment
+      - key: NEXT_PUBLIC_API_URL
+        value: https://backend-api.onrender.com/api
+        sync: false  # Update after backend deploys with actual URL
+    # Uncomment and add your environment variables here if needed
+    # - key: FIREBASE_API_KEY
+    #   sync: false  # Set this in Render dashboard instead for security
+
