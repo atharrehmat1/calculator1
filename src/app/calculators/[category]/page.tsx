@@ -3,10 +3,51 @@ import { api } from '@/lib/api';
 import Link from 'next/link';
 import { CategoryList } from '@/components/category-list';
 import { ArrowRight } from 'lucide-react';
+import type { Metadata } from 'next';
 
 // Disable static generation for this page to ensure fresh data
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: { params: Promise<{ category: string }> | { category: string } }): Promise<Metadata> {
+  try {
+    const resolvedParams = await Promise.resolve(params);
+    const allCategories = await getCategories();
+    const category = allCategories.find(c => c.slug === resolvedParams.category) || 
+                     allCategories.find(c => c.slug.toLowerCase() === resolvedParams.category?.toLowerCase());
+    
+    if (!category) {
+      return {
+        title: 'Category Not Found',
+        description: 'The requested category was not found.',
+      };
+    }
+
+    // Use meta tags from database if available, otherwise use defaults
+    const title = category.meta_title || `${category.name} Calculators - Free Online Tools`;
+    const description = category.meta_description || 
+      category.description || 
+      `Browse our collection of free ${category.name.toLowerCase()} calculators. Easy to use tools for all your calculation needs.`;
+    const keywords = category.meta_keywords || `${category.name.toLowerCase()}, calculator, online calculator, free calculator`;
+
+    return {
+      title,
+      description,
+      keywords,
+      openGraph: {
+        title,
+        description,
+        type: 'website',
+      },
+    };
+  } catch (error) {
+    return {
+      title: 'Calculators',
+      description: 'Browse our collection of free online calculators.',
+    };
+  }
+}
 
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> | { category: string } }) {
     try {

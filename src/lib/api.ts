@@ -1,5 +1,13 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
+// Radio option type for calculators with multiple modes
+export interface RadioOption {
+  id: string;
+  label: string;
+  inputs: any[];
+  results: any[];
+}
+
 export interface Calculator {
   id: number;
   name: string;
@@ -19,6 +27,12 @@ export interface Calculator {
   inputs?: any[];
   results?: any[];
   tags?: string[];
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string;
+  // Radio mode fields
+  has_radio_modes?: boolean;
+  radio_options?: RadioOption[];
 }
 
 export const api = {

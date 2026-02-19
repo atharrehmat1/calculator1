@@ -1,6 +1,6 @@
 "use client";
 
-type ContentBlock = 
+type ContentBlock =
   | { type: 'heading1' | 'heading2' | 'heading3' | 'paragraph'; content: string }
   | { type: 'image'; url: string; alt?: string; width?: number; height?: number };
 
@@ -11,20 +11,21 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
 
   // Check if content is HTML (contains HTML tags)
   const isHTML = /<[a-z][\s\S]*>/i.test(content);
-  
+
   if (isHTML) {
     // Render HTML directly with support for inline and internal CSS
     // Extract style tag if present and inject it
     const styleMatch = content.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
     const styleContent = styleMatch ? styleMatch[1] : null;
     const htmlContent = content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
-    
+
     return (
       <>
         {styleContent && (
           <style dangerouslySetInnerHTML={{ __html: styleContent }} />
         )}
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
           .calculator-description h1 {
             font-size: 2.25rem;
             font-weight: 700;
@@ -78,14 +79,22 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
             margin-bottom: 0.75rem;
             color: hsl(var(--foreground));
           }
-          .calculator-description ul, .calculator-description ol {
+          .calculator-description ul {
             margin-top: 0.75rem;
             margin-bottom: 0.75rem;
             padding-left: 1.5rem;
+            list-style-type: disc;
+          }
+          .calculator-description ol {
+            margin-top: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            list-style-type: decimal;
           }
           .calculator-description li {
             margin-top: 0.25rem;
             margin-bottom: 0.25rem;
+            display: list-item;
           }
           .calculator-description strong {
             font-weight: 600;
@@ -108,7 +117,7 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
             display: inline;
           }
         ` }} />
-        <div 
+        <div
           className="calculator-description"
           dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
@@ -118,7 +127,7 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
 
   // Legacy JSON block format support (for backward compatibility)
   let blocks: ContentBlock[] = [];
-  
+
   try {
     const parsed = JSON.parse(content);
     if (Array.isArray(parsed) && parsed.length > 0) {
@@ -138,9 +147,9 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
         if (block.type === 'image') {
           return (
             <div key={index} className="my-4">
-              <img 
-                src={block.url} 
-                alt={block.alt || ''} 
+              <img
+                src={block.url}
+                alt={block.alt || ''}
                 className="max-w-full h-auto rounded-lg border"
                 style={{
                   width: block.width ? `${block.width}px` : 'auto',
@@ -151,7 +160,7 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
             </div>
           );
         }
-        
+
         const blockContent = block.content || '';
         switch (block.type) {
           case 'heading1':

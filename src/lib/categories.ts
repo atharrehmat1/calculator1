@@ -22,6 +22,10 @@ export type Category = {
     icon: LucideIcon;
     href: string;
     count: number;
+    description?: string;
+    meta_title?: string;
+    meta_description?: string;
+    meta_keywords?: string;
 };
 
 // Icon mapping for categories
@@ -80,6 +84,10 @@ export async function getCategories(): Promise<Category[]> {
       icon: categoryIconMap[cat.slug] || Leaf,
       href: `/calculators/${cat.slug}`,
       count: calculatorCounts[cat.id] || 0,
+      description: cat.description,
+      meta_title: cat.meta_title,
+      meta_description: cat.meta_description,
+      meta_keywords: cat.meta_keywords,
     })) : [];
     
     return mappedCategories;

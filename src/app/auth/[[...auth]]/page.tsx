@@ -12,6 +12,23 @@ import { useAuth } from "@/contexts/auth-context";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
+// Eye icon components for password visibility toggle
+const EyeIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+        <circle cx="12" cy="12" r="3" />
+    </svg>
+);
+
+const EyeOffIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+        <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+        <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+        <path d="m2 2 20 20" />
+    </svg>
+);
+
 export default function AuthPage() {
     const router = useRouter();
     const { login, register, user } = useAuth();
@@ -23,6 +40,8 @@ export default function AuthPage() {
     const [signupName, setSignupName] = useState("");
     const [signupEmail, setSignupEmail] = useState("");
     const [signupPassword, setSignupPassword] = useState("");
+    const [showLoginPassword, setShowLoginPassword] = useState(false);
+    const [showSignupPassword, setShowSignupPassword] = useState(false);
 
     // Redirect if already logged in
     useEffect(() => {
@@ -33,7 +52,7 @@ export default function AuthPage() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Validation
         if (!loginEmail || !loginPassword) {
             toast({
@@ -75,7 +94,7 @@ export default function AuthPage() {
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Validation
         if (!signupName || !signupEmail || !signupPassword) {
             toast({
@@ -137,8 +156,8 @@ export default function AuthPage() {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-background">
-             <div className="w-full max-w-md mx-auto p-4">
-                 <div className="flex justify-center mb-6">
+            <div className="w-full max-w-md mx-auto p-4">
+                <div className="flex justify-center mb-6">
                     <Link href="/" className="flex items-center gap-2">
                         <Logo className="h-8 w-8" />
                         <span className="text-2xl font-bold font-headline text-foreground">
@@ -161,26 +180,37 @@ export default function AuthPage() {
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="email-login">Email</Label>
-                                        <Input 
-                                            id="email-login" 
-                                            type="email" 
-                                            placeholder="m@example.com" 
+                                        <Input
+                                            id="email-login"
+                                            type="email"
+                                            placeholder="m@example.com"
                                             value={loginEmail}
                                             onChange={(e) => setLoginEmail(e.target.value)}
-                                            required 
+                                            required
                                             disabled={isLoading}
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="password-login">Password</Label>
-                                        <Input 
-                                            id="password-login" 
-                                            type="password" 
-                                            value={loginPassword}
-                                            onChange={(e) => setLoginPassword(e.target.value)}
-                                            required 
-                                            disabled={isLoading}
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                id="password-login"
+                                                type={showLoginPassword ? "text" : "password"}
+                                                value={loginPassword}
+                                                onChange={(e) => setLoginPassword(e.target.value)}
+                                                required
+                                                disabled={isLoading}
+                                                className="pr-10"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowLoginPassword(!showLoginPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                                tabIndex={-1}
+                                            >
+                                                {showLoginPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                            </button>
+                                        </div>
                                     </div>
                                 </CardContent>
                                 <CardFooter className="flex flex-col gap-4">
@@ -189,9 +219,9 @@ export default function AuthPage() {
                                     </Button>
                                     <p className="text-xs text-center text-muted-foreground">
                                         Don&apos;t have an account?{' '}
-                                        <button 
+                                        <button
                                             type="button"
-                                            onClick={() => setActiveTab("signup")} 
+                                            onClick={() => setActiveTab("signup")}
                                             className="underline hover:text-primary"
                                         >
                                             Sign up
@@ -211,38 +241,49 @@ export default function AuthPage() {
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="name-signup">Name</Label>
-                                        <Input 
-                                            id="name-signup" 
-                                            placeholder="John Doe" 
+                                        <Input
+                                            id="name-signup"
+                                            placeholder="John Doe"
                                             value={signupName}
                                             onChange={(e) => setSignupName(e.target.value)}
-                                            required 
+                                            required
                                             disabled={isLoading}
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="email-signup">Email</Label>
-                                        <Input 
-                                            id="email-signup" 
-                                            type="email" 
-                                            placeholder="m@example.com" 
+                                        <Input
+                                            id="email-signup"
+                                            type="email"
+                                            placeholder="m@example.com"
                                             value={signupEmail}
                                             onChange={(e) => setSignupEmail(e.target.value)}
-                                            required 
+                                            required
                                             disabled={isLoading}
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="password-signup">Password</Label>
-                                        <Input 
-                                            id="password-signup" 
-                                            type="password" 
-                                            value={signupPassword}
-                                            onChange={(e) => setSignupPassword(e.target.value)}
-                                            required 
-                                            disabled={isLoading}
-                                            minLength={6}
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                id="password-signup"
+                                                type={showSignupPassword ? "text" : "password"}
+                                                value={signupPassword}
+                                                onChange={(e) => setSignupPassword(e.target.value)}
+                                                required
+                                                disabled={isLoading}
+                                                minLength={6}
+                                                className="pr-10"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowSignupPassword(!showSignupPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                                tabIndex={-1}
+                                            >
+                                                {showSignupPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                            </button>
+                                        </div>
                                         <p className="text-xs text-muted-foreground">Must be at least 6 characters</p>
                                     </div>
                                 </CardContent>
@@ -252,9 +293,9 @@ export default function AuthPage() {
                                     </Button>
                                     <p className="text-xs text-center text-muted-foreground">
                                         Already have an account?{' '}
-                                        <button 
+                                        <button
                                             type="button"
-                                            onClick={() => setActiveTab("login")} 
+                                            onClick={() => setActiveTab("login")}
                                             className="underline hover:text-primary"
                                         >
                                             Login

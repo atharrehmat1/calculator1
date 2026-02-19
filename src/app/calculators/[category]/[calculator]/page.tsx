@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { api, type Calculator } from '@/lib/api';
+import Head from 'next/head';
+import { api, type Calculator, type RadioOption } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Heart } from 'lucide-react';
+import { ArrowLeft, Heart, Radio } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CalculatorInfo } from '@/components/calculator-info';
 import { AdvancedCalculator } from '@/components/advanced-calculator';
 import { Input } from '@/components/ui/input';
@@ -26,9 +28,58 @@ export default function CalculatorPage() {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [loadingLikes, setLoadingLikes] = useState(true);
+  const [selectedRadioOption, setSelectedRadioOption] = useState<string>('');
+  const [radioOptions, setRadioOptions] = useState<RadioOption[]>([]);
 
   const categorySlug = params?.category as string;
   const calculatorSlug = params?.calculator as string;
+
+  // Update document meta tags when calculator data changes
+  useEffect(() => {
+    if (calculator) {
+      // Update title
+      const title = calculator.meta_title || `${calculator.name} - Free Online Calculator`;
+      document.title = title;
+
+      // Update meta description
+      const metaDescription = document.querySelector('meta[name="description"]');
+      const description = calculator.meta_description || 
+        (calculator.description ? calculator.description.replace(/<[^>]*>/g, '').substring(0, 160) : `Use our free ${calculator.name} to calculate results quickly and easily.`);
+      
+      if (metaDescription) {
+        metaDescription.setAttribute('content', description);
+      } else {
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'description';
+        newMeta.content = description;
+        document.head.appendChild(newMeta);
+      }
+
+      // Update meta keywords
+      if (calculator.meta_keywords) {
+        let metaKeywords = document.querySelector('meta[name="keywords"]');
+        if (metaKeywords) {
+          metaKeywords.setAttribute('content', calculator.meta_keywords);
+        } else {
+          const newMeta = document.createElement('meta');
+          newMeta.name = 'keywords';
+          newMeta.content = calculator.meta_keywords;
+          document.head.appendChild(newMeta);
+        }
+      }
+
+      // Update Open Graph tags
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) {
+        ogTitle.setAttribute('content', title);
+      }
+
+      const ogDescription = document.querySelector('meta[property="og:description"]');
+      if (ogDescription) {
+        ogDescription.setAttribute('content', description);
+      }
+    }
+  }, [calculator]);
 
   // Fetch calculator data
   useEffect(() => {
@@ -73,26 +124,55 @@ export default function CalculatorPage() {
 
         setCalculator(calc);
 
-        // Initialize input values
-        let inputs: any[] = [];
-        try {
-          if (calc.inputs) {
-            if (Array.isArray(calc.inputs)) {
-              inputs = calc.inputs;
-            } else if (typeof calc.inputs === 'string') {
-              inputs = JSON.parse(calc.inputs);
+        // Check if calculator has radio modes
+        if (calc.has_radio_modes && calc.radio_options) {
+          let options: RadioOption[] = [];
+          try {
+            if (Array.isArray(calc.radio_options)) {
+              options = calc.radio_options;
+            } else if (typeof calc.radio_options === 'string') {
+              options = JSON.parse(calc.radio_options);
             }
+          } catch (e) {
+            options = [];
           }
-        } catch (e) {
-          inputs = [];
-        }
+          
+          setRadioOptions(options);
+          
+          // Set first option as default
+          if (options.length > 0) {
+            setSelectedRadioOption(options[0].id);
+            
+            // Initialize input values for the first radio option
+            const initialValues: Record<string, string> = {};
+            options[0].inputs.forEach((input: any) => {
+              const inputName = input.name || input.label || input.key || `input_${input.id}`;
+              initialValues[inputName] = input.defaultValue?.toString() || '';
+            });
+            setInputValues(initialValues);
+          }
+        } else {
+          // Standard mode - Initialize input values normally
+          let inputs: any[] = [];
+          try {
+            if (calc.inputs) {
+              if (Array.isArray(calc.inputs)) {
+                inputs = calc.inputs;
+              } else if (typeof calc.inputs === 'string') {
+                inputs = JSON.parse(calc.inputs);
+              }
+            }
+          } catch (e) {
+            inputs = [];
+          }
 
-        const initialValues: Record<string, string> = {};
-        inputs.forEach((input: any) => {
-          const inputName = input.name || input.label || input.key || `input_${input.id}`;
-          initialValues[inputName] = input.defaultValue?.toString() || '';
-        });
-        setInputValues(initialValues);
+          const initialValues: Record<string, string> = {};
+          inputs.forEach((input: any) => {
+            const inputName = input.name || input.label || input.key || `input_${input.id}`;
+            initialValues[inputName] = input.defaultValue?.toString() || '';
+          });
+          setInputValues(initialValues);
+        }
 
         // Track view if user is authenticated
         if (user && calc.id) {
@@ -173,22 +253,37 @@ export default function CalculatorPage() {
   };
 
   const calculateResults = (values: Record<string, string>) => {
-    if (!calculator || !calculator.results) return;
+    if (!calculator) return;
 
     try {
       const calculatedResults: Record<string, any> = {};
 
-      // Parse inputs and results if they're strings
-      const inputs = Array.isArray(calculator.inputs)
-        ? calculator.inputs
-        : calculator.inputs
-        ? JSON.parse(calculator.inputs)
-        : [];
-      const results = Array.isArray(calculator.results)
-        ? calculator.results
-        : calculator.results
-        ? JSON.parse(calculator.results)
-        : [];
+      // Get inputs and results based on mode (radio or standard)
+      let inputs: any[] = [];
+      let results: any[] = [];
+      
+      if (calculator.has_radio_modes && radioOptions.length > 0 && selectedRadioOption) {
+        // Radio mode - get inputs and results from selected option
+        const currentOption = radioOptions.find(opt => opt.id === selectedRadioOption);
+        if (currentOption) {
+          inputs = currentOption.inputs || [];
+          results = currentOption.results || [];
+        }
+      } else {
+        // Standard mode - Parse inputs and results if they're strings
+        inputs = Array.isArray(calculator.inputs)
+          ? calculator.inputs
+          : calculator.inputs
+          ? JSON.parse(calculator.inputs)
+          : [];
+        results = Array.isArray(calculator.results)
+          ? calculator.results
+          : calculator.results
+          ? JSON.parse(calculator.results)
+          : [];
+      }
+      
+      if (results.length === 0) return;
 
       // Convert input values based on their type (preserve strings for text inputs, convert to numbers for number inputs)
       const inputValues: Record<string, number | string> = {};
@@ -878,6 +973,23 @@ export default function CalculatorPage() {
     setInputValues(newValues);
   };
 
+  // Handle radio option change
+  const handleRadioOptionChange = (optionId: string) => {
+    setSelectedRadioOption(optionId);
+    setResults({}); // Clear previous results
+    
+    // Initialize input values for the new radio option
+    const selectedOption = radioOptions.find(opt => opt.id === optionId);
+    if (selectedOption) {
+      const newValues: Record<string, string> = {};
+      selectedOption.inputs.forEach((input: any) => {
+        const inputName = input.name || input.label || input.key || `input_${input.id}`;
+        newValues[inputName] = input.defaultValue?.toString() || '';
+      });
+      setInputValues(newValues);
+    }
+  };
+
   // Recalculate results when input values change
   useEffect(() => {
     if (calculator && Object.keys(inputValues).length > 0) {
@@ -890,7 +1002,7 @@ export default function CalculatorPage() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValues, calculator]);
+  }, [inputValues, calculator, selectedRadioOption]);
 
 
   if (loading) {
@@ -954,80 +1066,171 @@ export default function CalculatorPage() {
       <div className="max-w-4xl mx-auto mb-8">
         <Card>
           <CardContent className="p-6 space-y-6">
-            {/* Parse inputs - handle both array and JSON string */}
-            {(() => {
-              let inputs: any[] = [];
-              try {
-                if (calculator.inputs) {
-                  if (Array.isArray(calculator.inputs)) {
-                    inputs = calculator.inputs;
-                  } else if (typeof calculator.inputs === 'string') {
-                    inputs = JSON.parse(calculator.inputs);
-                  }
-                }
-              } catch (e) {
-                inputs = [];
-              }
-
-              return inputs.length > 0 ? (
-                <>
-                  {/* Input Fields */}
-                  <div className="space-y-4">
-                    {inputs.map((input: any, index: number) => {
-                      const inputName = input.name || input.label || input.key || `input_${input.id || index}`;
-                      return (
-                        <div key={index} className="space-y-2">
-                          <Label htmlFor={inputName}>
-                            {input.label || input.name || `Input ${index + 1}`}
-                            {input.unit && <span className="text-muted-foreground ml-1">({input.unit})</span>}
-                            {input.required && <span className="text-red-500 ml-1">*</span>}
-                          </Label>
-                          <Input
-                            id={inputName}
-                            type={input.type || 'number'}
-                            placeholder={input.placeholder || `Enter ${input.label || input.name}`}
-                            value={inputValues[inputName] || ''}
-                            onChange={(e) => handleInputChange(inputName, e.target.value)}
-                          />
-                          {input.description && (
-                            <p className="text-sm text-muted-foreground">{input.description}</p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Results */}
-                  {Object.keys(results).length > 0 && (
-                    <div className="mt-6 space-y-4">
-                      <h3 className="text-lg font-semibold">Results</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.entries(results).map(([key, result]: [string, any]) => (
-                          <div key={key} className="p-4 bg-muted rounded-lg">
-                            <div className="text-sm text-muted-foreground mb-1">{result.label || key}</div>
-                            <div className="text-2xl font-bold">
-                              {result.format === 'currency'
-                                ? result.value
-                                : typeof result.value === 'number'
-                                ? result.value.toFixed(2)
-                                : result.value}
-                              {result.unit && result.format !== 'currency' && result.format !== 'percent' && (
-                                <span className="text-lg ml-1">{result.unit}</span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+            {/* Check if calculator has radio modes */}
+            {calculator.has_radio_modes && radioOptions.length > 0 ? (
+              <>
+                {/* Radio Mode Calculator */}
+                {/* Radio Options Selector */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Select Calculation Mode</Label>
+                  <RadioGroup 
+                    value={selectedRadioOption} 
+                    onValueChange={handleRadioOptionChange}
+                    className="flex flex-wrap gap-3"
+                  >
+                    {radioOptions.map((option) => (
+                      <div key={option.id} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option.id} id={option.id} />
+                        <Label 
+                          htmlFor={option.id} 
+                          className={`cursor-pointer px-3 py-1.5 rounded-md transition-colors ${
+                            selectedRadioOption === option.id 
+                              ? 'bg-primary/10 text-primary font-medium' 
+                              : 'hover:bg-muted'
+                          }`}
+                        >
+                          {option.label}
+                        </Label>
                       </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                /* Fallback to Advanced Calculator if no inputs defined */
-                <div className="flex justify-center">
-                  <AdvancedCalculator />
+                    ))}
+                  </RadioGroup>
                 </div>
-              );
-            })()}
+
+                {/* Input Fields for Selected Radio Option */}
+                {(() => {
+                  const currentOption = radioOptions.find(opt => opt.id === selectedRadioOption);
+                  if (!currentOption || currentOption.inputs.length === 0) return null;
+
+                  return (
+                    <div className="space-y-4 pt-4 border-t">
+                      {currentOption.inputs.map((input: any, index: number) => {
+                        const inputName = input.name || input.label || input.key || `input_${input.id || index}`;
+                        return (
+                          <div key={index} className="space-y-2">
+                            <Label htmlFor={inputName}>
+                              {input.label || input.name || `Input ${index + 1}`}
+                              {input.unit && <span className="text-muted-foreground ml-1">({input.unit})</span>}
+                              {input.required && <span className="text-red-500 ml-1">*</span>}
+                            </Label>
+                            <Input
+                              id={inputName}
+                              type={input.type || 'number'}
+                              placeholder={input.placeholder || `Enter ${input.label || input.name}`}
+                              value={inputValues[inputName] || ''}
+                              onChange={(e) => handleInputChange(inputName, e.target.value)}
+                              min={input.min}
+                              max={input.max}
+                            />
+                            {input.description && (
+                              <p className="text-sm text-muted-foreground">{input.description}</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
+                {/* Results for Radio Mode */}
+                {Object.keys(results).length > 0 && (
+                  <div className="mt-6 space-y-4 pt-4 border-t">
+                    <h3 className="text-lg font-semibold">Results</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.entries(results).map(([key, result]: [string, any]) => (
+                        <div key={key} className="p-4 bg-muted rounded-lg">
+                          <div className="text-sm text-muted-foreground mb-1">{result.label || key}</div>
+                          <div className="text-2xl font-bold">
+                            {result.format === 'currency'
+                              ? result.value
+                              : typeof result.value === 'number'
+                              ? result.value.toFixed(2)
+                              : result.value}
+                            {result.unit && result.format !== 'currency' && result.format !== 'percent' && (
+                              <span className="text-lg ml-1">{result.unit}</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              /* Standard Mode Calculator */
+              (() => {
+                let inputs: any[] = [];
+                try {
+                  if (calculator.inputs) {
+                    if (Array.isArray(calculator.inputs)) {
+                      inputs = calculator.inputs;
+                    } else if (typeof calculator.inputs === 'string') {
+                      inputs = JSON.parse(calculator.inputs);
+                    }
+                  }
+                } catch (e) {
+                  inputs = [];
+                }
+
+                return inputs.length > 0 ? (
+                  <>
+                    {/* Input Fields */}
+                    <div className="space-y-4">
+                      {inputs.map((input: any, index: number) => {
+                        const inputName = input.name || input.label || input.key || `input_${input.id || index}`;
+                        return (
+                          <div key={index} className="space-y-2">
+                            <Label htmlFor={inputName}>
+                              {input.label || input.name || `Input ${index + 1}`}
+                              {input.unit && <span className="text-muted-foreground ml-1">({input.unit})</span>}
+                              {input.required && <span className="text-red-500 ml-1">*</span>}
+                            </Label>
+                            <Input
+                              id={inputName}
+                              type={input.type || 'number'}
+                              placeholder={input.placeholder || `Enter ${input.label || input.name}`}
+                              value={inputValues[inputName] || ''}
+                              onChange={(e) => handleInputChange(inputName, e.target.value)}
+                            />
+                            {input.description && (
+                              <p className="text-sm text-muted-foreground">{input.description}</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Results */}
+                    {Object.keys(results).length > 0 && (
+                      <div className="mt-6 space-y-4">
+                        <h3 className="text-lg font-semibold">Results</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {Object.entries(results).map(([key, result]: [string, any]) => (
+                            <div key={key} className="p-4 bg-muted rounded-lg">
+                              <div className="text-sm text-muted-foreground mb-1">{result.label || key}</div>
+                              <div className="text-2xl font-bold">
+                                {result.format === 'currency'
+                                  ? result.value
+                                  : typeof result.value === 'number'
+                                  ? result.value.toFixed(2)
+                                  : result.value}
+                                {result.unit && result.format !== 'currency' && result.format !== 'percent' && (
+                                  <span className="text-lg ml-1">{result.unit}</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  /* Fallback to Advanced Calculator if no inputs defined */
+                  <div className="flex justify-center">
+                    <AdvancedCalculator />
+                  </div>
+                );
+              })()
+            )}
           </CardContent>
         </Card>
       </div>
