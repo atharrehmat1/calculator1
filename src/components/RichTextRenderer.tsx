@@ -116,6 +116,40 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
           .calculator-description span[style] {
             display: inline;
           }
+          /* Table styles for CKEditor tables */
+          .calculator-description table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+          }
+          .calculator-description thead {
+            background-color: hsl(var(--muted));
+          }
+          .calculator-description th,
+          .calculator-description td {
+            border: 1px solid hsl(var(--border));
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            color: hsl(var(--foreground));
+          }
+          .calculator-description th {
+            font-weight: 600;
+            background-color: hsl(var(--muted));
+          }
+          .calculator-description tr:nth-child(even) {
+            background-color: hsl(var(--muted) / 0.3);
+          }
+          .calculator-description caption {
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+          }
+          .calculator-description figure.table {
+            margin: 1rem 0;
+            overflow-x: auto;
+          }
         ` }} />
         <div
           className="calculator-description"

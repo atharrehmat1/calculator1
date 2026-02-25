@@ -33,6 +33,8 @@ export interface Calculator {
   // Radio mode fields
   has_radio_modes?: boolean;
   radio_options?: RadioOption[];
+  // Sub-calculators
+  sub_calculators?: any[];
 }
 
 export const api = {
@@ -44,16 +46,16 @@ export const api = {
       if (params?.is_active !== undefined) queryParams.append('is_active', params.is_active.toString());
       if (params?.most_used !== undefined) queryParams.append('most_used', params.most_used.toString());
       if (params?.popular !== undefined) queryParams.append('popular', params.popular.toString());
-      
+
       const url = queryParams.toString() ? `${API_BASE_URL}/calculators?${queryParams.toString()}` : `${API_BASE_URL}/calculators`;
-      
+
       try {
         const response = await fetch(url, { credentials: 'include' });
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch calculators: ${response.status} ${response.statusText}`);
         }
-        
+
         const data = await response.json();
         return data;
       } catch (error) {
@@ -69,8 +71,8 @@ export const api = {
       const queryParams = new URLSearchParams();
       if (categoryId) queryParams.append('category_id', categoryId.toString());
       if (subcategoryId) queryParams.append('subcategory_id', subcategoryId.toString());
-      
-      const url = queryParams.toString() 
+
+      const url = queryParams.toString()
         ? `${API_BASE_URL}/calculators/slug/${slug}?${queryParams.toString()}`
         : `${API_BASE_URL}/calculators/slug/${slug}`;
       const response = await fetch(url);
@@ -81,14 +83,14 @@ export const api = {
   categories: {
     getAll: async () => {
       const url = `${API_BASE_URL}/categories`;
-      
+
       try {
         const response = await fetch(url, { credentials: 'include' });
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
         }
-        
+
         const data = await response.json();
         return data;
       } catch (error) {
@@ -99,14 +101,14 @@ export const api = {
   subcategories: {
     getAll: async (categoryId?: number) => {
       const url = categoryId ? `${API_BASE_URL}/subcategories?category_id=${categoryId}` : `${API_BASE_URL}/subcategories`;
-      
+
       try {
         const response = await fetch(url, { credentials: 'include' });
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch subcategories: ${response.status} ${response.statusText}`);
         }
-        
+
         const data = await response.json();
         return data;
       } catch (error) {
@@ -154,7 +156,7 @@ export const api = {
       const params = new URLSearchParams();
       if (limit) params.append('limit', limit.toString());
       if (offset) params.append('offset', offset.toString());
-      const url = params.toString() 
+      const url = params.toString()
         ? `${API_BASE_URL}/calculator-interactions/comments/${calculatorId}?${params.toString()}`
         : `${API_BASE_URL}/calculator-interactions/comments/${calculatorId}`;
       const response = await fetch(url, { credentials: 'include' });
@@ -228,7 +230,7 @@ export const api = {
     },
     login: async (email: string, password: string) => {
       const url = `${API_BASE_URL}/auth/login`;
-      
+
       try {
         const response = await fetch(url, {
           method: 'POST',
@@ -236,12 +238,12 @@ export const api = {
           body: JSON.stringify({ email, password }),
           credentials: 'include',
         });
-        
+
         if (!response.ok) {
           const error = await response.json();
           throw new Error(error.details || error.error || 'Failed to login');
         }
-        
+
         const data = await response.json();
         return data;
       } catch (error) {
@@ -258,16 +260,16 @@ export const api = {
     },
     getSession: async () => {
       const url = `${API_BASE_URL}/auth/session`;
-      
+
       try {
         const response = await fetch(url, {
           credentials: 'include',
         });
-        
+
         if (!response.ok) {
           throw new Error(`Failed to get session: ${response.status} ${response.statusText}`);
         }
-        
+
         const data = await response.json();
         return data;
       } catch (error) {

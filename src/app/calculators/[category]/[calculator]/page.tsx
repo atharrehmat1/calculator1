@@ -30,6 +30,8 @@ export default function CalculatorPage() {
   const [loadingLikes, setLoadingLikes] = useState(true);
   const [selectedRadioOption, setSelectedRadioOption] = useState<string>('');
   const [radioOptions, setRadioOptions] = useState<RadioOption[]>([]);
+  const [subCalcInputValues, setSubCalcInputValues] = useState<Record<string, Record<string, string>>>({});
+  const [subCalcResults, setSubCalcResults] = useState<Record<string, Record<string, any>>>({});
 
   const categorySlug = params?.category as string;
   const calculatorSlug = params?.calculator as string;
@@ -43,9 +45,9 @@ export default function CalculatorPage() {
 
       // Update meta description
       const metaDescription = document.querySelector('meta[name="description"]');
-      const description = calculator.meta_description || 
+      const description = calculator.meta_description ||
         (calculator.description ? calculator.description.replace(/<[^>]*>/g, '').substring(0, 160) : `Use our free ${calculator.name} to calculate results quickly and easily.`);
-      
+
       if (metaDescription) {
         metaDescription.setAttribute('content', description);
       } else {
@@ -136,13 +138,13 @@ export default function CalculatorPage() {
           } catch (e) {
             options = [];
           }
-          
+
           setRadioOptions(options);
-          
+
           // Set first option as default
           if (options.length > 0) {
             setSelectedRadioOption(options[0].id);
-            
+
             // Initialize input values for the first radio option
             const initialValues: Record<string, string> = {};
             options[0].inputs.forEach((input: any) => {
@@ -172,6 +174,26 @@ export default function CalculatorPage() {
             initialValues[inputName] = input.defaultValue?.toString() || '';
           });
           setInputValues(initialValues);
+        }
+
+        // Initialize sub-calculator input values
+        if (calc.sub_calculators) {
+          let subs: any[] = [];
+          try {
+            subs = Array.isArray(calc.sub_calculators) ? calc.sub_calculators : JSON.parse(calc.sub_calculators);
+          } catch (e) {
+            subs = [];
+          }
+          const subInitialValues: Record<string, Record<string, string>> = {};
+          subs.forEach((sub: any) => {
+            const vals: Record<string, string> = {};
+            (sub.inputs || []).forEach((input: any) => {
+              const inputName = input.name || input.label || input.key || `input_${input.id}`;
+              vals[inputName] = input.defaultValue?.toString() || '';
+            });
+            subInitialValues[sub.id] = vals;
+          });
+          setSubCalcInputValues(subInitialValues);
         }
 
         // Track view if user is authenticated
@@ -225,7 +247,7 @@ export default function CalculatorPage() {
     try {
       const data = await api.calculatorInteractions.toggleLike(calculator.id);
       setIsLiked(data.liked);
-      
+
       // Refresh like count
       const likesData = await api.calculatorInteractions.getLikes(calculator.id);
       setLikeCount(likesData.likeCount);
@@ -261,7 +283,7 @@ export default function CalculatorPage() {
       // Get inputs and results based on mode (radio or standard)
       let inputs: any[] = [];
       let results: any[] = [];
-      
+
       if (calculator.has_radio_modes && radioOptions.length > 0 && selectedRadioOption) {
         // Radio mode - get inputs and results from selected option
         const currentOption = radioOptions.find(opt => opt.id === selectedRadioOption);
@@ -274,15 +296,15 @@ export default function CalculatorPage() {
         inputs = Array.isArray(calculator.inputs)
           ? calculator.inputs
           : calculator.inputs
-          ? JSON.parse(calculator.inputs)
-          : [];
+            ? JSON.parse(calculator.inputs)
+            : [];
         results = Array.isArray(calculator.results)
           ? calculator.results
           : calculator.results
-          ? JSON.parse(calculator.results)
-          : [];
+            ? JSON.parse(calculator.results)
+            : [];
       }
-      
+
       if (results.length === 0) return;
 
       // Convert input values based on their type (preserve strings for text inputs, convert to numbers for number inputs)
@@ -292,7 +314,7 @@ export default function CalculatorPage() {
         const rawValue = values[inputName] || '';
         const key = input.key || inputName;
         const inputType = input.type || 'number';
-        
+
         if (inputType === 'number') {
           const value = parseFloat(rawValue);
           inputValues[key] = isNaN(value) ? 0 : value;
@@ -364,13 +386,13 @@ export default function CalculatorPage() {
         add_days: (date: string | Date | number, days: number) => {
           try {
             let dateObj: Date;
-            
+
             // Handle different input types
             if (typeof date === 'string') {
               // Try to parse the date string
               const dateStr = date.trim();
               dateObj = new Date(dateStr);
-              
+
               // If parsing fails, try alternative formats
               if (isNaN(dateObj.getTime())) {
                 // Try common date formats: YYYY-MM-DD, MM/DD/YYYY, etc.
@@ -379,7 +401,7 @@ export default function CalculatorPage() {
                   dateStr.replace(/\//g, '-'), // Convert slashes to dashes
                   dateStr.replace(/-/g, '/'), // Convert dashes to slashes
                 ];
-                
+
                 for (const format of formats) {
                   const parsed = new Date(format);
                   if (!isNaN(parsed.getTime())) {
@@ -387,7 +409,7 @@ export default function CalculatorPage() {
                     break;
                   }
                 }
-                
+
                 if (isNaN(dateObj.getTime())) {
                   throw new Error(`Invalid date format: ${date}`);
                 }
@@ -400,16 +422,16 @@ export default function CalculatorPage() {
             } else {
               throw new Error(`Invalid date type: ${typeof date}`);
             }
-            
+
             // Validate the date
             if (isNaN(dateObj.getTime())) {
               throw new Error(`Invalid date: ${date}`);
             }
-            
+
             // Add days
             const result = new Date(dateObj);
             result.setDate(result.getDate() + Math.floor(Number(days) || 0));
-            
+
             return result;
           } catch (error) {
             throw new Error(`add_days failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -421,12 +443,12 @@ export default function CalculatorPage() {
           const normalizeGenotype = (genotype: string) => {
             return String(genotype || '').trim().replace(/\s+/g, '');
           };
-          
+
           const p1 = normalizeGenotype(parent1);
           const p2 = normalizeGenotype(parent2);
-          
+
           if (!p1 || !p2) return 'Invalid genotype';
-          
+
           // Extract alleles (assume single letter alleles like A, a)
           const getAlleles = (genotype: string) => {
             const alleles: string[] = [];
@@ -438,18 +460,18 @@ export default function CalculatorPage() {
             }
             return alleles.length === 2 ? alleles : [genotype[0] || 'A', genotype[1] || 'a'];
           };
-          
+
           const p1Alleles = getAlleles(p1);
           const p2Alleles = getAlleles(p2);
-          
+
           // Generate gametes
           const p1Gametes = [...new Set(p1Alleles)];
           const p2Gametes = [...new Set(p2Alleles)];
-          
+
           // Calculate offspring genotypes and probabilities
           const outcomes: Record<string, number> = {};
           let total = 0;
-          
+
           for (const g1 of p1Gametes) {
             for (const g2 of p2Gametes) {
               // Sort alleles to normalize genotype (Aa = aA)
@@ -458,14 +480,14 @@ export default function CalculatorPage() {
               total++;
             }
           }
-          
+
           // Format results
           const results: string[] = [];
           for (const [genotype, count] of Object.entries(outcomes)) {
             const probability = (count / total) * 100;
             results.push(`${genotype}: ${probability.toFixed(1)}%`);
           }
-          
+
           return results.join(', ');
         },
         compute_dihybrid_punnett: (parent1_genotype: string, parent2_genotype: string) => {
@@ -473,18 +495,18 @@ export default function CalculatorPage() {
           const normalizeGenotype = (genotype: string) => {
             return String(genotype || '').trim().replace(/\s+/g, '');
           };
-          
+
           const p1 = normalizeGenotype(parent1_genotype);
           const p2 = normalizeGenotype(parent2_genotype);
-          
+
           if (!p1 || !p2) return 'Invalid genotype';
-          
+
           // Parse dihybrid genotype (e.g., AaBb -> [A,a] and [B,b])
           const parseDihybrid = (genotype: string) => {
             const upper = genotype.match(/[A-Z]/g) || [];
             const lower = genotype.match(/[a-z]/g) || [];
             const pairs: string[][] = [];
-            
+
             // Try to pair uppercase with lowercase
             for (let i = 0; i < Math.max(upper.length, lower.length); i++) {
               const u = upper[i] || '';
@@ -493,7 +515,7 @@ export default function CalculatorPage() {
                 pairs.push([u, l]);
               }
             }
-            
+
             // If we can't pair, try to extract pairs of 2
             if (pairs.length === 0 && genotype.length >= 4) {
               for (let i = 0; i < genotype.length; i += 2) {
@@ -503,15 +525,15 @@ export default function CalculatorPage() {
                 }
               }
             }
-            
+
             return pairs.length >= 2 ? pairs : [[genotype[0] || 'A', genotype[1] || 'a'], [genotype[2] || 'B', genotype[3] || 'b']];
           };
-          
+
           const p1Pairs = parseDihybrid(p1);
           const p2Pairs = parseDihybrid(p2);
-          
+
           if (p1Pairs.length < 2 || p2Pairs.length < 2) return 'Invalid dihybrid genotype';
-          
+
           // Generate gametes (4 possible combinations for each parent)
           const getGametes = (pairs: string[][]) => {
             const gametes: string[] = [];
@@ -523,14 +545,14 @@ export default function CalculatorPage() {
             }
             return gametes;
           };
-          
+
           const p1Gametes = getGametes(p1Pairs);
           const p2Gametes = getGametes(p2Pairs);
-          
+
           // Calculate offspring genotypes
           const outcomes: Record<string, number> = {};
           let total = 0;
-          
+
           for (const g1 of p1Gametes) {
             for (const g2 of p2Gametes) {
               // Combine gametes to form genotype
@@ -539,14 +561,14 @@ export default function CalculatorPage() {
               total++;
             }
           }
-          
+
           // Format results (show unique genotypes with probabilities)
           const results: string[] = [];
           for (const [genotype, count] of Object.entries(outcomes)) {
             const probability = (count / total) * 100;
             results.push(`${genotype}: ${probability.toFixed(1)}%`);
           }
-          
+
           return results.join(', ');
         },
         compute_trihybrid_punnett: (parent1_genotype: string, parent2_genotype: string) => {
@@ -554,16 +576,16 @@ export default function CalculatorPage() {
           const normalizeGenotype = (genotype: string) => {
             return String(genotype || '').trim().replace(/\s+/g, '');
           };
-          
+
           const p1 = normalizeGenotype(parent1_genotype);
           const p2 = normalizeGenotype(parent2_genotype);
-          
+
           if (!p1 || !p2) return 'Invalid genotype';
-          
+
           // Parse trihybrid genotype (e.g., AaBbCc -> [A,a], [B,b], [C,c])
           const parseTrihybrid = (genotype: string) => {
             const pairs: string[][] = [];
-            
+
             // Try to extract pairs of 2
             for (let i = 0; i < genotype.length; i += 2) {
               const pair = genotype.slice(i, i + 2);
@@ -571,7 +593,7 @@ export default function CalculatorPage() {
                 pairs.push([pair[0], pair[1]]);
               }
             }
-            
+
             // If we don't have 3 pairs, try to infer
             if (pairs.length < 3 && genotype.length >= 6) {
               pairs.length = 0;
@@ -582,19 +604,19 @@ export default function CalculatorPage() {
                 }
               }
             }
-            
+
             return pairs.length >= 3 ? pairs : [
               [genotype[0] || 'A', genotype[1] || 'a'],
               [genotype[2] || 'B', genotype[3] || 'b'],
               [genotype[4] || 'C', genotype[5] || 'c']
             ];
           };
-          
+
           const p1Pairs = parseTrihybrid(p1);
           const p2Pairs = parseTrihybrid(p2);
-          
+
           if (p1Pairs.length < 3 || p2Pairs.length < 3) return 'Invalid trihybrid genotype';
-          
+
           // Generate gametes (8 possible combinations for each parent)
           const getGametes = (pairs: string[][]) => {
             const gametes: string[] = [];
@@ -608,14 +630,14 @@ export default function CalculatorPage() {
             }
             return gametes;
           };
-          
+
           const p1Gametes = getGametes(p1Pairs);
           const p2Gametes = getGametes(p2Pairs);
-          
+
           // Calculate offspring genotypes
           const outcomes: Record<string, number> = {};
           let total = 0;
-          
+
           for (const g1 of p1Gametes) {
             for (const g2 of p2Gametes) {
               // Combine gametes to form genotype
@@ -624,14 +646,14 @@ export default function CalculatorPage() {
               total++;
             }
           }
-          
+
           // Format results (show unique genotypes with probabilities)
           const results: string[] = [];
           for (const [genotype, count] of Object.entries(outcomes)) {
             const probability = (count / total) * 100;
             results.push(`${genotype}: ${probability.toFixed(1)}%`);
           }
-          
+
           return results.join(', ');
         },
         // Length function for arrays, strings, and objects
@@ -661,7 +683,7 @@ export default function CalculatorPage() {
         // Convert ^ operator to pow() function
         // This handles patterns like: a ^ b, (a + b) ^ c, a ^ (b + c), etc.
         let result = formula;
-        
+
         // Function to find matching closing parenthesis
         const findMatchingParen = (str: string, start: number): number => {
           let depth = 1;
@@ -672,14 +694,14 @@ export default function CalculatorPage() {
           }
           return -1;
         };
-        
+
         // Function to find the start of an operand (going left from a position)
         const findOperandStart = (str: string, endPos: number): number => {
           let pos = endPos;
           // Skip whitespace
           while (pos >= 0 && /\s/.test(str[pos])) pos--;
           if (pos < 0) return endPos;
-          
+
           if (str[pos] === ')') {
             // Find matching opening parenthesis
             let depth = 1;
@@ -690,7 +712,7 @@ export default function CalculatorPage() {
               start--;
             }
             const parenStart = start + 1;
-            
+
             // Check if there's a function name before the opening parenthesis
             let funcStart = parenStart - 1;
             while (funcStart >= 0 && /\s/.test(str[funcStart])) funcStart--;
@@ -699,7 +721,7 @@ export default function CalculatorPage() {
               while (funcStart >= 0 && /[a-zA-Z0-9_]/.test(str[funcStart])) funcStart--;
               return funcStart + 1;
             }
-            
+
             return parenStart;
           } else if (/[a-zA-Z_]/.test(str[pos])) {
             // Extract identifier (might be part of a function call or variable)
@@ -716,14 +738,14 @@ export default function CalculatorPage() {
             return pos;
           }
         };
-        
+
         // Function to find the end of an operand (going right from a position)
         const findOperandEnd = (str: string, startPos: number): number => {
           let pos = startPos;
           // Skip whitespace
           while (pos < str.length && /\s/.test(str[pos])) pos++;
           if (pos >= str.length) return startPos;
-          
+
           if (str[pos] === '(') {
             // Find matching closing parenthesis
             const end = findMatchingParen(str, pos);
@@ -733,11 +755,11 @@ export default function CalculatorPage() {
             // Extract the identifier first
             let end = pos;
             while (end < str.length && /[a-zA-Z0-9_]/.test(str[end])) end++;
-            
+
             // Check if this identifier is followed by a function call
             let nextPos = end;
             while (nextPos < str.length && /\s/.test(str[nextPos])) nextPos++;
-            
+
             if (nextPos < str.length && str[nextPos] === '(') {
               // This is a function call, include the entire call
               const parenEnd = findMatchingParen(str, nextPos);
@@ -756,7 +778,7 @@ export default function CalculatorPage() {
             return pos;
           }
         };
-        
+
         // Process from right to left to handle right-associativity
         let caretIndex = result.lastIndexOf('^');
         while (caretIndex !== -1) {
@@ -764,12 +786,12 @@ export default function CalculatorPage() {
           const leftStart = findOperandStart(result, caretIndex - 1);
           const leftEnd = caretIndex - 1;
           let leftValue = result.substring(leftStart, leftEnd + 1).trim();
-          
+
           // Extract right operand (everything after ^)
           const rightStart = caretIndex + 1;
           const rightEnd = findOperandEnd(result, rightStart);
           let rightValue = result.substring(rightStart, rightEnd + 1).trim();
-          
+
           // Remove outer parentheses if they exist for cleaner output
           // But preserve inner parentheses for function calls and nested expressions
           while (leftValue.startsWith('(') && leftValue.endsWith(')')) {
@@ -782,7 +804,7 @@ export default function CalculatorPage() {
               break;
             }
           }
-          
+
           while (rightValue.startsWith('(') && rightValue.endsWith(')')) {
             const inner = rightValue.slice(1, -1).trim();
             if (inner.length > 0) {
@@ -791,19 +813,19 @@ export default function CalculatorPage() {
               break;
             }
           }
-          
+
           // Ensure we have valid operands
           if (!leftValue || !rightValue) {
             break;
           }
-          
+
           const replacement = `pow(${leftValue}, ${rightValue})`;
           result = result.substring(0, leftStart) + replacement + result.substring(rightEnd + 1);
-          
+
           // Find next ^ operator
           caretIndex = result.lastIndexOf('^');
         }
-        
+
         return result;
       };
 
@@ -811,11 +833,11 @@ export default function CalculatorPage() {
       const evaluateJavaScript = (code: string, currentScope: Record<string, any>): any => {
         const scopeKeys = Object.keys(currentScope);
         const scopeValues = scopeKeys.map(key => currentScope[key]);
-        
+
         // Convert ^ operator to pow() function before evaluation
         const originalCode = code;
         code = convertPowerOperator(code);
-        
+
         // Verify that pow is available if the code uses it
         if (code.includes('pow(')) {
           if (!currentScope.pow) {
@@ -825,20 +847,20 @@ export default function CalculatorPage() {
             throw new Error(`pow is not a function (type: ${typeof currentScope.pow}). Please ensure pow is defined as a function in the calculator scope.`);
           }
         }
-        
+
         // Check if code contains statements (if, for, while, etc.)
-        const hasStatements = /^(if|for|while|switch|function|const|let|var|return)\s/.test(code.trim()) || 
-                              /;\s*(if|for|while|switch|function|const|let|var|return)/.test(code) ||
-                              (code.includes('{') && code.includes('}'));
-        
+        const hasStatements = /^(if|for|while|switch|function|const|let|var|return)\s/.test(code.trim()) ||
+          /;\s*(if|for|while|switch|function|const|let|var|return)/.test(code) ||
+          (code.includes('{') && code.includes('}'));
+
         const functionBody = hasStatements ? code : `return ${code}`;
-        
+
         try {
           // Verify pow is in scope keys
           if (code.includes('pow(') && !scopeKeys.includes('pow')) {
             throw new Error('pow function is not in the evaluation scope. This is a bug in the calculator.');
           }
-          
+
           const func = new Function(...scopeKeys, functionBody);
           return func(...scopeValues);
         } catch (error: any) {
@@ -855,9 +877,9 @@ export default function CalculatorPage() {
           try {
             // Check if formula contains JavaScript syntax (loops, if-else, etc.)
             const hasJavaScriptSyntax = /^(if|for|while|switch|function|const|let|var|return)\s/.test(result.formula.trim()) ||
-                                       /;\s*(if|for|while|switch|function|const|let|var|return)/.test(result.formula) ||
-                                       (result.formula.includes('{') && result.formula.includes('}')) ||
-                                       result.formula.includes('=>');
+              /;\s*(if|for|while|switch|function|const|let|var|return)/.test(result.formula) ||
+              (result.formula.includes('{') && result.formula.includes('}')) ||
+              result.formula.includes('=>');
 
             let value: any;
             if (hasJavaScriptSyntax) {
@@ -904,18 +926,18 @@ export default function CalculatorPage() {
             // Handle arrays (multiple values from comma-separated expressions)
             let formattedValue: string | number | string[];
             const resultValue = computed[result.key];
-            
+
             // Helper to safely convert and format a value
             const safeFormatValue = (val: any, fmt: string): string | number => {
               if (typeof val === 'string') return val;
               if (val === null || val === undefined) return 'N/A';
-              
+
               const numVal = typeof val === 'number' ? val : Number(val);
               if (isNaN(numVal)) {
                 if (typeof val === 'boolean') return val.toString();
                 return String(val);
               }
-              
+
               if (fmt === 'currency') {
                 return new Intl.NumberFormat('en-US', {
                   style: 'currency',
@@ -931,7 +953,7 @@ export default function CalculatorPage() {
                 return parseFloat(numVal.toFixed(2));
               }
             };
-            
+
             if (Array.isArray(resultValue)) {
               formattedValue = resultValue.map(v => safeFormatValue(v, result.format)).join(', ');
             } else if (typeof resultValue === 'string') {
@@ -977,7 +999,7 @@ export default function CalculatorPage() {
   const handleRadioOptionChange = (optionId: string) => {
     setSelectedRadioOption(optionId);
     setResults({}); // Clear previous results
-    
+
     // Initialize input values for the new radio option
     const selectedOption = radioOptions.find(opt => opt.id === optionId);
     if (selectedOption) {
@@ -1003,6 +1025,73 @@ export default function CalculatorPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputValues, calculator, selectedRadioOption]);
+
+  // Handle sub-calculator input change
+  const handleSubCalcInputChange = (subId: string, name: string, value: string) => {
+    setSubCalcInputValues(prev => ({
+      ...prev,
+      [subId]: { ...(prev[subId] || {}), [name]: value },
+    }));
+  };
+
+  // Calculate sub-calculator results when their inputs change
+  useEffect(() => {
+    if (!calculator || !calculator.sub_calculators) return;
+    let subs: any[] = [];
+    try {
+      subs = Array.isArray(calculator.sub_calculators) ? calculator.sub_calculators : JSON.parse(calculator.sub_calculators);
+    } catch { return; }
+
+    const allSubResults: Record<string, Record<string, any>> = {};
+
+    subs.forEach((sub: any) => {
+      const vals = subCalcInputValues[sub.id] || {};
+      const hasVal = Object.values(vals).some(v => v && v.trim() !== '');
+      if (!hasVal) return;
+
+      const subInputValues: Record<string, number | string> = {};
+      (sub.inputs || []).forEach((input: any) => {
+        const inputName = input.name || input.label || input.key;
+        const raw = vals[inputName] || '';
+        const key = input.key || inputName;
+        if (input.type === 'number' || input.type === 'integer' || input.type === 'percent') {
+          const v = parseFloat(raw); subInputValues[key] = isNaN(v) ? 0 : v;
+        } else {
+          subInputValues[key] = raw;
+        }
+      });
+
+      const scope: Record<string, any> = {
+        ...subInputValues,
+        Math, Number, Array, String, Object, JSON, Date,
+        sqrt: Math.sqrt, abs: Math.abs, pow: Math.pow,
+        round: Math.round, floor: Math.floor, ceil: Math.ceil,
+        min: Math.min, max: Math.max, log: Math.log, log10: Math.log10,
+        sin: Math.sin, cos: Math.cos, tan: Math.tan,
+        exp: Math.exp,
+      };
+
+      const computed: Record<string, any> = {};
+      (sub.results || []).forEach((result: any) => {
+        try {
+          const formula = result.formula || '';
+          const fn = new Function(...Object.keys({ ...scope, ...computed }), `return (${formula})`);
+          const value = fn(...Object.values({ ...scope, ...computed }));
+          const key = result.key || result.label;
+          computed[key] = value;
+          allSubResults[sub.id] = allSubResults[sub.id] || {};
+          allSubResults[sub.id][key] = {
+            label: result.label,
+            value,
+            unit: result.unit,
+            format: result.format,
+          };
+        } catch (e) { /* skip errors */ }
+      });
+    });
+
+    setSubCalcResults(allSubResults);
+  }, [subCalcInputValues, calculator]);
 
 
   if (loading) {
@@ -1031,10 +1120,10 @@ export default function CalculatorPage() {
   return (
     <div className="container py-12">
       <div className="relative flex items-center justify-between mb-8 bg-card p-4 rounded-lg shadow-sm min-h-[60px] md:min-h-[70px]">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 flex-shrink-0" 
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 flex-shrink-0"
           onClick={() => router.back()}
         >
           <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
@@ -1046,8 +1135,8 @@ export default function CalculatorPage() {
           </h1>
         </div>
         <div className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 flex-shrink-0">
-          <Button 
-            variant={isLiked ? "default" : "outline"} 
+          <Button
+            variant={isLiked ? "default" : "outline"}
             onClick={handleLike}
             disabled={loadingLikes}
             size="sm"
@@ -1073,21 +1162,20 @@ export default function CalculatorPage() {
                 {/* Radio Options Selector */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Select Calculation Mode</Label>
-                  <RadioGroup 
-                    value={selectedRadioOption} 
+                  <RadioGroup
+                    value={selectedRadioOption}
                     onValueChange={handleRadioOptionChange}
                     className="flex flex-wrap gap-3"
                   >
                     {radioOptions.map((option) => (
                       <div key={option.id} className="flex items-center space-x-2">
                         <RadioGroupItem value={option.id} id={option.id} />
-                        <Label 
-                          htmlFor={option.id} 
-                          className={`cursor-pointer px-3 py-1.5 rounded-md transition-colors ${
-                            selectedRadioOption === option.id 
-                              ? 'bg-primary/10 text-primary font-medium' 
-                              : 'hover:bg-muted'
-                          }`}
+                        <Label
+                          htmlFor={option.id}
+                          className={`cursor-pointer px-3 py-1.5 rounded-md transition-colors ${selectedRadioOption === option.id
+                            ? 'bg-primary/10 text-primary font-medium'
+                            : 'hover:bg-muted'
+                            }`}
                         >
                           {option.label}
                         </Label>
@@ -1143,8 +1231,8 @@ export default function CalculatorPage() {
                             {result.format === 'currency'
                               ? result.value
                               : typeof result.value === 'number'
-                              ? result.value.toFixed(2)
-                              : result.value}
+                                ? result.value.toFixed(2)
+                                : result.value}
                             {result.unit && result.format !== 'currency' && result.format !== 'percent' && (
                               <span className="text-lg ml-1">{result.unit}</span>
                             )}
@@ -1211,8 +1299,8 @@ export default function CalculatorPage() {
                                 {result.format === 'currency'
                                   ? result.value
                                   : typeof result.value === 'number'
-                                  ? result.value.toFixed(2)
-                                  : result.value}
+                                    ? result.value.toFixed(2)
+                                    : result.value}
                                 {result.unit && result.format !== 'currency' && result.format !== 'percent' && (
                                   <span className="text-lg ml-1">{result.unit}</span>
                                 )}
@@ -1234,6 +1322,78 @@ export default function CalculatorPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Sub-Calculators */}
+      {calculator.sub_calculators && (() => {
+        let subs: any[] = [];
+        try {
+          subs = Array.isArray(calculator.sub_calculators) ? calculator.sub_calculators : JSON.parse(calculator.sub_calculators);
+        } catch { subs = []; }
+        if (subs.length === 0) return null;
+
+        return subs.map((sub: any) => {
+          let subInputs: any[] = sub.inputs || [];
+          const subId = sub.id;
+          const subResults = subCalcResults[subId] || {};
+
+          return (
+            <div key={subId} className="max-w-4xl mx-auto mb-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{sub.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  {subInputs.length > 0 && (
+                    <div className="space-y-4">
+                      {subInputs.map((input: any, index: number) => {
+                        const inputName = input.name || input.label || input.key || `input_${input.id || index}`;
+                        return (
+                          <div key={index} className="space-y-2">
+                            <Label htmlFor={`${subId}_${inputName}`}>
+                              {input.label || input.name || `Input ${index + 1}`}
+                              {input.unit && <span className="text-muted-foreground ml-1">({input.unit})</span>}
+                            </Label>
+                            <Input
+                              id={`${subId}_${inputName}`}
+                              type={input.type || 'number'}
+                              placeholder={input.placeholder || `Enter ${input.label || input.name}`}
+                              value={(subCalcInputValues[subId] || {})[inputName] || ''}
+                              onChange={(e) => handleSubCalcInputChange(subId, inputName, e.target.value)}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {Object.keys(subResults).length > 0 && (
+                    <div className="mt-6 space-y-4">
+                      <h3 className="text-lg font-semibold">Results</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Object.entries(subResults).map(([key, result]: [string, any]) => (
+                          <div key={key} className="p-4 bg-muted rounded-lg">
+                            <div className="text-sm text-muted-foreground mb-1">{result.label || key}</div>
+                            <div className="text-2xl font-bold">
+                              {result.format === 'currency'
+                                ? result.value
+                                : typeof result.value === 'number'
+                                  ? result.value.toFixed(2)
+                                  : result.value}
+                              {result.unit && result.format !== 'currency' && result.format !== 'percent' && (
+                                <span className="text-lg ml-1">{result.unit}</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          );
+        });
+      })()}
 
       <CalculatorInfo calculator={calculator} />
     </div>
