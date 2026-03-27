@@ -224,7 +224,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                                 // Only show subcategories that have calculators (filtered above)
                                 return (
                                     <div key={subcategory.id}>
-                                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 flex-wrap">
                                             <ArrowRight className="h-6 w-6 text-primary" />
                                             {subcategory.name}
                                             <span className="text-sm font-normal text-muted-foreground">

@@ -7,6 +7,7 @@ import { api, type Calculator, type RadioOption } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Heart, Radio } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalculatorInfo } from '@/components/calculator-info';
 import { AdvancedCalculator } from '@/components/advanced-calculator';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,8 @@ export default function CalculatorPage() {
   const [radioOptions, setRadioOptions] = useState<RadioOption[]>([]);
   const [subCalcInputValues, setSubCalcInputValues] = useState<Record<string, Record<string, string>>>({});
   const [subCalcResults, setSubCalcResults] = useState<Record<string, Record<string, any>>>({});
+  const [selectedInputUnits, setSelectedInputUnits] = useState<Record<string, string>>({});
+  const [selectedResultUnits, setSelectedResultUnits] = useState<Record<string, string>>({});
 
   const categorySlug = params?.category as string;
   const calculatorSlug = params?.calculator as string;
@@ -316,8 +319,18 @@ export default function CalculatorPage() {
         const inputType = input.type || 'number';
 
         if (inputType === 'number') {
-          const value = parseFloat(rawValue);
-          inputValues[key] = isNaN(value) ? 0 : value;
+          let value = parseFloat(rawValue);
+          value = isNaN(value) ? 0 : value;
+          
+          if (input.hasUnitDropdown && input.unitOptions) {
+            const selectedUnitVal = selectedInputUnits[inputName] || input.defaultUnit || input.unitOptions[0]?.value;
+            const option = input.unitOptions.find((opt: any) => opt.value === selectedUnitVal);
+            if (option && option.multiplier) {
+              value = value * option.multiplier;
+            }
+          }
+          
+          inputValues[key] = value;
         } else {
           // For text inputs, preserve the string value
           inputValues[key] = rawValue;
@@ -926,9 +939,25 @@ export default function CalculatorPage() {
             // Handle arrays (multiple values from comma-separated expressions)
             let formattedValue: string | number | string[];
             const resultValue = computed[result.key];
+            
+            let finalValue = resultValue;
+            let displayUnit = result.unit || '';
+            const resultKey = result.key || result.name || result.label || `result_${result.id}`;
+            
+            if (result.hasUnitDropdown && result.unitOptions && typeof finalValue === 'number' && !isNaN(finalValue)) {
+              const selectedUnitVal = selectedResultUnits[resultKey] || result.defaultUnit || result.unitOptions[0]?.value;
+              const option = result.unitOptions.find((opt: any) => opt.value === selectedUnitVal);
+              
+              if (option) {
+                if (option.multiplier && option.multiplier !== 0) {
+                  finalValue = finalValue / option.multiplier;
+                }
+                displayUnit = option.label;
+              }
+            }
 
             // Helper to safely convert and format a value
-            const safeFormatValue = (val: any, fmt: string): string | number => {
+            const safeFormatValue = (val: any, fmt: string, currUnit: string): string | number => {
               if (typeof val === 'string') return val;
               if (val === null || val === undefined) return 'N/A';
 
@@ -939,12 +968,21 @@ export default function CalculatorPage() {
               }
 
               if (fmt === 'currency') {
-                return new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(numVal);
+                try {
+                  return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: currUnit && currUnit.length === 3 ? currUnit.toUpperCase() : 'USD',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(numVal);
+                } catch {
+                  return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(numVal);
+                }
               } else if (fmt === 'percent') {
                 return `${numVal.toFixed(2)}%`;
               } else if (fmt === 'integer') {
@@ -954,21 +992,22 @@ export default function CalculatorPage() {
               }
             };
 
-            if (Array.isArray(resultValue)) {
-              formattedValue = resultValue.map(v => safeFormatValue(v, result.format)).join(', ');
-            } else if (typeof resultValue === 'string') {
-              // If value is already a string (e.g., from toString(2) for binary), return it as-is
-              formattedValue = resultValue;
+            if (Array.isArray(finalValue)) {
+              formattedValue = finalValue.map(v => safeFormatValue(v, result.format, displayUnit)).join(', ');
+            } else if (typeof finalValue === 'string') {
+              formattedValue = finalValue;
             } else {
-              formattedValue = safeFormatValue(resultValue, result.format);
+              formattedValue = safeFormatValue(finalValue, result.format, displayUnit);
             }
 
-            const resultKey = result.key || result.name || result.label || `result_${result.id}`;
             calculatedResults[resultKey] = {
               value: formattedValue,
               label: result.label || result.name || resultKey,
-              unit: result.unit || '',
+              unit: displayUnit,
               format: result.format || 'number',
+              hasUnitDropdown: result.hasUnitDropdown,
+              unitOptions: result.unitOptions,
+              defaultUnit: result.defaultUnit
             };
           } catch (err) {
             const resultKey = result.key || result.name || result.label || `result_${result.id}`;
@@ -993,6 +1032,14 @@ export default function CalculatorPage() {
       [name]: value,
     };
     setInputValues(newValues);
+  };
+
+  const handleInputUnitChange = (inputName: string, unitValue: string) => {
+    setSelectedInputUnits(prev => ({ ...prev, [inputName]: unitValue }));
+  };
+
+  const handleResultUnitChange = (resultKey: string, unitValue: string) => {
+    setSelectedResultUnits(prev => ({ ...prev, [resultKey]: unitValue }));
   };
 
   // Handle radio option change
@@ -1024,7 +1071,7 @@ export default function CalculatorPage() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValues, calculator, selectedRadioOption]);
+  }, [inputValues, calculator, selectedRadioOption, selectedInputUnits, selectedResultUnits]);
 
   // Handle sub-calculator input change
   const handleSubCalcInputChange = (subId: string, name: string, value: string) => {
@@ -1197,18 +1244,38 @@ export default function CalculatorPage() {
                           <div key={index} className="space-y-2">
                             <Label htmlFor={inputName}>
                               {input.label || input.name || `Input ${index + 1}`}
-                              {input.unit && <span className="text-muted-foreground ml-1">({input.unit})</span>}
+                              {input.unit && !input.hasUnitDropdown && <span className="text-muted-foreground ml-1">({input.unit})</span>}
                               {input.required && <span className="text-red-500 ml-1">*</span>}
                             </Label>
-                            <Input
-                              id={inputName}
-                              type={input.type || 'number'}
-                              placeholder={input.placeholder || `Enter ${input.label || input.name}`}
-                              value={inputValues[inputName] || ''}
-                              onChange={(e) => handleInputChange(inputName, e.target.value)}
-                              min={input.min}
-                              max={input.max}
-                            />
+                            <div className="flex gap-2">
+                              <Input
+                                id={inputName}
+                                type={input.type || 'number'}
+                                placeholder={input.placeholder || `Enter ${input.label || input.name}`}
+                                value={inputValues[inputName] || ''}
+                                onChange={(e) => handleInputChange(inputName, e.target.value)}
+                                min={input.min}
+                                max={input.max}
+                                className="flex-1"
+                              />
+                              {input.hasUnitDropdown && input.unitOptions && (
+                                <Select
+                                  value={selectedInputUnits[inputName] || input.defaultUnit || input.unitOptions[0]?.value || ''}
+                                  onValueChange={(val) => handleInputUnitChange(inputName, val)}
+                                >
+                                  <SelectTrigger className="w-[120px]">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {input.unitOptions.map((opt: any) => (
+                                      <SelectItem key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            </div>
                             {input.description && (
                               <p className="text-sm text-muted-foreground">{input.description}</p>
                             )}
@@ -1225,8 +1292,27 @@ export default function CalculatorPage() {
                     <h3 className="text-lg font-semibold">Results</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {Object.entries(results).map(([key, result]: [string, any]) => (
-                        <div key={key} className="p-4 bg-muted rounded-lg">
-                          <div className="text-sm text-muted-foreground mb-1">{result.label || key}</div>
+                        <div key={key} className="p-4 bg-muted rounded-lg flex flex-col justify-between">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="text-sm text-muted-foreground">{result.label || key}</span>
+                            {result.hasUnitDropdown && result.unitOptions && (
+                              <Select
+                                value={selectedResultUnits[key] || result.defaultUnit || result.unitOptions[0]?.value || ''}
+                                onValueChange={(val) => handleResultUnitChange(key, val)}
+                              >
+                                <SelectTrigger className="h-7 text-xs w-auto min-w-[80px] border bg-background shadow-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {result.unitOptions.map((opt: any) => (
+                                    <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                                      {opt.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
                           <div className="text-2xl font-bold">
                             {result.format === 'currency'
                               ? result.value
@@ -1234,7 +1320,7 @@ export default function CalculatorPage() {
                                 ? result.value.toFixed(2)
                                 : result.value}
                             {result.unit && result.format !== 'currency' && result.format !== 'percent' && (
-                              <span className="text-lg ml-1">{result.unit}</span>
+                              <span className="text-lg ml-1 font-normal text-muted-foreground">{result.unit}</span>
                             )}
                           </div>
                         </div>
@@ -1269,16 +1355,36 @@ export default function CalculatorPage() {
                           <div key={index} className="space-y-2">
                             <Label htmlFor={inputName}>
                               {input.label || input.name || `Input ${index + 1}`}
-                              {input.unit && <span className="text-muted-foreground ml-1">({input.unit})</span>}
+                              {input.unit && !input.hasUnitDropdown && <span className="text-muted-foreground ml-1">({input.unit})</span>}
                               {input.required && <span className="text-red-500 ml-1">*</span>}
                             </Label>
-                            <Input
-                              id={inputName}
-                              type={input.type || 'number'}
-                              placeholder={input.placeholder || `Enter ${input.label || input.name}`}
-                              value={inputValues[inputName] || ''}
-                              onChange={(e) => handleInputChange(inputName, e.target.value)}
-                            />
+                            <div className="flex gap-2">
+                              <Input
+                                id={inputName}
+                                type={input.type || 'number'}
+                                placeholder={input.placeholder || `Enter ${input.label || input.name}`}
+                                value={inputValues[inputName] || ''}
+                                onChange={(e) => handleInputChange(inputName, e.target.value)}
+                                className="flex-1"
+                              />
+                              {input.hasUnitDropdown && input.unitOptions && (
+                                <Select
+                                  value={selectedInputUnits[inputName] || input.defaultUnit || input.unitOptions[0]?.value || ''}
+                                  onValueChange={(val) => handleInputUnitChange(inputName, val)}
+                                >
+                                  <SelectTrigger className="w-[120px]">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {input.unitOptions.map((opt: any) => (
+                                      <SelectItem key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            </div>
                             {input.description && (
                               <p className="text-sm text-muted-foreground">{input.description}</p>
                             )}
@@ -1293,8 +1399,27 @@ export default function CalculatorPage() {
                         <h3 className="text-lg font-semibold">Results</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {Object.entries(results).map(([key, result]: [string, any]) => (
-                            <div key={key} className="p-4 bg-muted rounded-lg">
-                              <div className="text-sm text-muted-foreground mb-1">{result.label || key}</div>
+                            <div key={key} className="p-4 bg-muted rounded-lg flex flex-col justify-between">
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="text-sm text-muted-foreground">{result.label || key}</span>
+                                {result.hasUnitDropdown && result.unitOptions && (
+                                  <Select
+                                    value={selectedResultUnits[key] || result.defaultUnit || result.unitOptions[0]?.value || ''}
+                                    onValueChange={(val) => handleResultUnitChange(key, val)}
+                                  >
+                                    <SelectTrigger className="h-7 text-xs w-auto min-w-[80px] border bg-background shadow-sm">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {result.unitOptions.map((opt: any) => (
+                                        <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                                          {opt.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                              </div>
                               <div className="text-2xl font-bold">
                                 {result.format === 'currency'
                                   ? result.value
@@ -1302,7 +1427,7 @@ export default function CalculatorPage() {
                                     ? result.value.toFixed(2)
                                     : result.value}
                                 {result.unit && result.format !== 'currency' && result.format !== 'percent' && (
-                                  <span className="text-lg ml-1">{result.unit}</span>
+                                  <span className="text-lg ml-1 font-normal text-muted-foreground">{result.unit}</span>
                                 )}
                               </div>
                             </div>

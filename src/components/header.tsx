@@ -15,7 +15,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { getCategories, type Category } from "@/lib/categories";
-import { cn } from "@/lib/utils";
+import { cn, stripHtml, truncate } from "@/lib/utils";
 import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from "./logo";
 import { useAuth } from "@/contexts/auth-context";
@@ -156,7 +156,7 @@ export function Header() {
                      <div className="font-medium text-sm">{calc.name}</div>
                      {(calc.subtitle || calc.description) && (
                        <div className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                         {calc.subtitle || calc.description}
+                         {truncate(stripHtml(calc.subtitle || calc.description), 160)}
                        </div>
                      )}
                      <div className="text-xs text-muted-foreground mt-1">

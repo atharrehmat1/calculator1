@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { api, type Calculator as CalculatorType } from '@/lib/api';
 import { getCategoryIcon } from '@/lib/categories';
 import { LucideIcon, ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, stripHtml, truncate } from '@/lib/utils';
 
 export function PopularCalculators() {
   const [calculators, setCalculators] = useState<CalculatorType[]>([]);
@@ -75,8 +75,8 @@ export function PopularCalculators() {
         {calculators.map((calc) => {
           const IconComponent = getCategoryIcon(calc.category_slug) as LucideIcon;
           
-          const subtitleValue = calc.subtitle && calc.subtitle.trim() ? calc.subtitle : null;
-          const descriptionValue = calc.description && calc.description.trim() ? calc.description : null;
+          const subtitleValue = calc.subtitle && calc.subtitle.trim() ? truncate(stripHtml(calc.subtitle), 160) : null;
+          const descriptionValue = calc.description && calc.description.trim() ? truncate(stripHtml(calc.description), 160) : null;
           const displayText = subtitleValue || descriptionValue || 'No description available.';
           
           return (

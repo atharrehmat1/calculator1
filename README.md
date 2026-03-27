@@ -1,3 +1,5 @@
-## Calculator1.org
+# Firebase Studio
 
-In this website we got more than 3000+ calculators.
+This is a NextJS starter in Firebase Studio.
+
+To get started, take a look at src/app/page.tsx.
