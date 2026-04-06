@@ -390,7 +390,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
               <TabsTrigger value="about" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
                 About
               </TabsTrigger>
-              
               <TabsTrigger value="how-to-use" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
                 <span className="hidden sm:inline">How to use</span>
                 <span className="sm:hidden">Use</span>
