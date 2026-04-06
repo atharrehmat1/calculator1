@@ -291,7 +291,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         console.error('[CategoryPage] Error message:', error instanceof Error ? error.message : error);
         console.error('[CategoryPage] Error stack:', error instanceof Error ? error.stack : undefined);
         console.error('[CategoryPage] Full error object:', error);
-        console.error('[CategoryPage] Params at error time:', resolvedParams);
+        // console.error('[CategoryPage] Params at error time:', resolvedParams);
         
         return (
             <div className="container py-12">

@@ -33,6 +33,8 @@ export interface Calculator {
   // Radio mode fields
   has_radio_modes?: boolean;
   radio_options?: RadioOption[];
+  // How to use instructions
+  how_to_use?: string;
   // Sub-calculators
   sub_calculators?: any[];
 }

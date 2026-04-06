@@ -9,7 +9,6 @@ import {
   Heart,
   Bookmark,
   Share2,
-  DollarSign,
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -391,6 +390,11 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
               <TabsTrigger value="about" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
                 About
               </TabsTrigger>
+              
+              <TabsTrigger value="how-to-use" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
+                <span className="hidden sm:inline">How to use</span>
+                <span className="sm:hidden">Use</span>
+              </TabsTrigger>
               <TabsTrigger value="reviews" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
                 <span className="hidden sm:inline">Reviews & Comments</span>
                 <span className="sm:hidden">Reviews</span>
@@ -405,10 +409,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
                 <Share2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2 flex-shrink-0" />
                 <span className="hidden sm:inline">Share</span>
               </button>
-              <TabsTrigger value="donate" disabled className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
-                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2 flex-shrink-0" />
-                <span className="hidden sm:inline">Donate</span>
-              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="about" className="mt-0">
@@ -498,20 +498,14 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
               </div>
             </TabsContent>
             
-            <TabsContent value="donate" className="mt-0">
-              <div className="space-y-4">
-                <Button 
-                  variant="outline" 
-                  disabled
-                  size="lg"
-                >
-                  <DollarSign className="w-5 h-5 mr-2" />
-                  Donate (Coming Soon)
-                </Button>
-                <p className="text-sm text-muted-foreground">
-                  Donation functionality will be available soon. Thank you for your interest in supporting us!
-                </p>
-              </div>
+            <TabsContent value="how-to-use" className="mt-0">
+              {calculator?.how_to_use ? (
+                <RichTextRenderer content={calculator.how_to_use} />
+              ) : (
+                <div className="text-sm text-muted-foreground">
+                  No usage instructions have been added for this calculator yet.
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
