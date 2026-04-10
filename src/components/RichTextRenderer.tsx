@@ -116,6 +116,148 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
           .calculator-description span[style] {
             display: inline;
           }
+          .calculator-description img {
+            max-width: 100%;
+            height: auto;
+          }
+          .calculator-description picture,
+          .calculator-description figure {
+            margin: 1rem 0;
+            max-width: 100%;
+          }
+          /* Default block image — only when no alignment class is set */
+          .calculator-description figure.image:not([class*="image-style"]) {
+            display: block;
+          }
+
+          /* ── Inline style ── */
+          .calculator-description figure.image.image-style-inline {
+            display: inline-block;
+            float: none;
+            margin: 0.25rem 0.5rem;
+            vertical-align: middle;
+          }
+
+          /* ── Block (full-width, centred) ── */
+          .calculator-description figure.image.image-style-block,
+          .calculator-description figure.image.image-style-align-block {
+            display: block;
+            float: none;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+          }
+          .calculator-description figure.image.image-style-block img,
+          .calculator-description figure.image.image-style-align-block img {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+          }
+
+          /* ── Centre aligned ── */
+          .calculator-description figure.image.image-style-align-center,
+          .calculator-description .image-style-align-center {
+            display: block;
+            float: none !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            text-align: center;
+          }
+          .calculator-description figure.image.image-style-align-center img,
+          .calculator-description .image-style-align-center img {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            float: none !important;
+          }
+
+          /* ── Block-align variants (CKEditor 5 newer class names) ── */
+          .calculator-description figure.image.image-style-block-align-center {
+            display: block;
+            float: none !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+          }
+          .calculator-description figure.image.image-style-block-align-left {
+            display: block;
+            float: none;
+            margin-left: 0;
+            margin-right: auto;
+          }
+          .calculator-description figure.image.image-style-block-align-right {
+            display: block;
+            float: none;
+            margin-left: auto;
+            margin-right: 0;
+          }
+
+          /* ── Left aligned / float left ── */
+          .calculator-description figure.image.image-style-align-left,
+          .calculator-description .image-style-align-left {
+            float: left !important;
+            margin-right: 1rem !important;
+            margin-left: 0 !important;
+            margin-bottom: 0.5rem;
+            display: block;
+            max-width: 100%;
+          }
+          /* Fallback for unresized images */
+          .calculator-description figure.image.image-style-align-left:not([style*="width"]),
+          .calculator-description .image-style-align-left:not([style*="width"]) {
+            max-width: 55%;
+          }
+          .calculator-description figure.image.image-style-align-left img,
+          .calculator-description .image-style-align-left img {
+            width: 100%;   /* fill the figure so resized figures render correctly */
+            height: auto;
+          }
+
+          /* ── Right aligned / float right ── */
+          .calculator-description figure.image.image-style-align-right,
+          .calculator-description .image-style-align-right {
+            float: right !important;
+            margin-left: 1rem !important;
+            margin-right: 0 !important;
+            margin-bottom: 0.5rem;
+            display: block;
+            max-width: 100%;
+          }
+          .calculator-description figure.image.image-style-align-right:not([style*="width"]),
+          .calculator-description .image-style-align-right:not([style*="width"]) {
+            max-width: 55%;
+          }
+          .calculator-description figure.image.image-style-align-right img,
+          .calculator-description .image-style-align-right img {
+            width: 100%;
+            height: auto;
+          }
+
+          /* ── Side style (floated right, like "beside text") ── */
+          .calculator-description figure.image.image-style-side,
+          .calculator-description .image-style-side {
+            float: right !important;
+            margin-left: 1rem !important;
+            margin-bottom: 1rem;
+            display: block;
+            max-width: 100%;
+          }
+          .calculator-description figure.image.image-style-side:not([style*="width"]),
+          .calculator-description .image-style-side:not([style*="width"]) {
+            max-width: 55%;
+          }
+          .calculator-description figure.image.image-style-side img,
+          .calculator-description .image-style-side img {
+            width: 100%;
+            height: auto;
+          }
+
+          /* ── Clearfix: only on the outer container, NOT on paragraphs ── */
+          /* Clearing on p::after would push every paragraph below the float */
+          .calculator-description::after {
+            content: "";
+            display: table;
+            clear: both;
+          }
           /* Table styles for CKEditor tables */
           .calculator-description table {
             width: 100%;

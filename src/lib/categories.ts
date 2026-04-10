@@ -67,15 +67,6 @@ export const MAIN_CATEGORY_SLUGS = [
 export async function getCategories(): Promise<Category[]> {
   try {
     const categories = await api.categories.getAll();
-    const calculators = await api.calculators.getAll({ is_active: true });
-    
-    // Count calculators per category
-    const calculatorCounts: Record<number, number> = {};
-    if (Array.isArray(calculators)) {
-      calculators.forEach(calc => {
-        calculatorCounts[calc.category_id] = (calculatorCounts[calc.category_id] || 0) + 1;
-      });
-    }
     
     const mappedCategories = Array.isArray(categories) ? categories.map((cat: any) => ({
       id: cat.id,
@@ -83,7 +74,7 @@ export async function getCategories(): Promise<Category[]> {
       name: cat.name,
       icon: categoryIconMap[cat.slug] || Leaf,
       href: `/calculators/${cat.slug}`,
-      count: calculatorCounts[cat.id] || 0,
+      count: typeof cat.count === 'string' ? parseInt(cat.count, 10) : cat.count || 0,
       description: cat.description,
       meta_title: cat.meta_title,
       meta_description: cat.meta_description,
