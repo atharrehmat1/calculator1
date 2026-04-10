@@ -5,9 +5,9 @@ import { CategoryList } from '@/components/category-list';
 import { ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
 
-// Disable static generation for this page to ensure fresh data
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Allow Next.js to cache the category page briefly and avoid forced dynamic rendering
+export const dynamic = 'auto';
+export const revalidate = 60;
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> | { category: string } }): Promise<Metadata> {

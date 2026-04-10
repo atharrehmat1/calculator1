@@ -78,7 +78,7 @@ export function Header() {
         const allCalculators = await api.calculators.getAll({ is_active: true });
         const query = searchQuery.toLowerCase();
         const filtered = allCalculators
-          .filter(calc => 
+          .filter(calc =>
             calc.name.toLowerCase().includes(query) ||
             calc.description?.toLowerCase().includes(query) ||
             calc.subtitle?.toLowerCase().includes(query) ||
@@ -86,7 +86,7 @@ export function Header() {
             calc.subcategory_name?.toLowerCase().includes(query)
           )
           .slice(0, 10); // Limit to 10 results
-        
+
         setSearchResults(filtered);
         setShowSuggestions(filtered.length > 0);
       } catch (error) {
@@ -136,44 +136,44 @@ export function Header() {
 
         <div className="flex-1 flex justify-center px-4 lg:px-16">
           <div className="relative w-full max-w-md hidden md:block" ref={searchRef}>
-             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-             <Input
-                type="search"
-                placeholder="Search calculators..."
-                className="w-full rounded-full pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => searchQuery.length >= 2 && searchResults.length > 0 && setShowSuggestions(true)}
-              />
-             {showSuggestions && searchResults.length > 0 && (
-               <div className="absolute top-full mt-2 w-full bg-background border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-                 {searchResults.map((calc) => (
-                   <button
-                     key={calc.id}
-                     onClick={() => handleCalculatorClick(calc)}
-                     className="w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b border-border last:border-b-0"
-                   >
-                     <div className="font-medium text-sm">{calc.name}</div>
-                     {(calc.subtitle || calc.description) && (
-                       <div className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                         {truncate(stripHtml(calc.subtitle || calc.description), 160)}
-                       </div>
-                     )}
-                     <div className="text-xs text-muted-foreground mt-1">
-                       {calc.category_name} {calc.subcategory_name && `• ${calc.subcategory_name}`}
-                     </div>
-                   </button>
-                 ))}
-               </div>
-             )}
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+            <Input
+              type="search"
+              placeholder="Search calculators..."
+              className="w-full rounded-full pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => searchQuery.length >= 2 && searchResults.length > 0 && setShowSuggestions(true)}
+            />
+            {showSuggestions && searchResults.length > 0 && (
+              <div className="absolute top-full mt-2 w-full bg-background border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                {searchResults.map((calc) => (
+                  <button
+                    key={calc.id}
+                    onClick={() => handleCalculatorClick(calc)}
+                    className="w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b border-border last:border-b-0"
+                  >
+                    <div className="font-medium text-sm">{calc.name}</div>
+                    {(calc.subtitle || calc.description) && (
+                      <div className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                        {truncate(stripHtml(calc.subtitle || calc.description), 160)}
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {calc.category_name} {calc.subcategory_name && `• ${calc.subcategory_name}`}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="md:hidden">
-                <Search className="h-5 w-5" />
-                <span className="sr-only">Search</span>
-            </Button>
+          <Button variant="ghost" size="icon" className="md:hidden">
+            <Search className="h-5 w-5" />
+            <span className="sr-only">Search</span>
+          </Button>
           <LanguageSelector />
           <ThemeToggle />
           {!loading && (
@@ -197,34 +197,34 @@ export function Header() {
       {!isHomePage && (
         <nav className="border-t lg:hidden">
           <div className="container px-4 md:px-6">
-              <Carousel
-                opts={{
-                  align: "start",
-                  dragFree: true,
-                }}
-                className="w-full"
-              >
-                <CarouselContent>
-                  {categories.filter(cat => cat.count > 0).map((category) => (
-                    <CarouselItem key={category.id} className="basis-auto">
-                      <Link href={category.href}>
-                        <div className={cn(
-                            "py-3 px-4 text-sm font-medium transition-colors relative border-b-2", 
-                            activeCategory === category.slug 
-                              ? "text-primary border-primary" 
-                              : "text-gray-700 dark:text-muted-foreground hover:text-foreground border-transparent"
-                          )}>
-                          {category.name}
-                        </div>
-                      </Link>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <div className="hidden md:block">
-                    <CarouselPrevious className="absolute -left-4 top-1/2 -translate-y-1/2" />
-                    <CarouselNext className="absolute -right-4 top-1/2 -translate-y-1/2" />
-                </div>
-              </Carousel>
+            <Carousel
+              opts={{
+                align: "start",
+                dragFree: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {categories.filter(cat => cat.count > 0).map((category) => (
+                  <CarouselItem key={category.id} className="basis-auto">
+                    <Link href={category.href}>
+                      <div className={cn(
+                        "py-3 px-4 text-sm font-medium transition-colors relative border-b-2",
+                        activeCategory === category.slug
+                          ? "text-primary border-primary"
+                          : "text-gray-700 dark:text-muted-foreground hover:text-foreground border-transparent"
+                      )}>
+                        {category.name}
+                      </div>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="hidden md:block">
+                <CarouselPrevious className="absolute -left-4 top-1/2 -translate-y-1/2" />
+                <CarouselNext className="absolute -right-4 top-1/2 -translate-y-1/2" />
+              </div>
+            </Carousel>
           </div>
         </nav>
       )}
