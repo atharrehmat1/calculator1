@@ -14,6 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import { useExchangeRates } from '@/hooks/use-exchange-rates';
+import { getUnitSystem, getDefaultLengthUnit } from '@/lib/locale-units';
 
 interface CalculatorClientProps {
   categorySlug: string;
@@ -38,6 +40,23 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
   const [subCalcResults, setSubCalcResults] = useState<Record<string, Record<string, any>>>({});
   const [selectedInputUnits, setSelectedInputUnits] = useState<Record<string, string>>({});
   const [selectedResultUnits, setSelectedResultUnits] = useState<Record<string, string>>({});
+
+  // Exchange rates for currency calculators
+  const { data: exchangeRatesData, loading: exchangeRatesLoading, convertCurrency } = useExchangeRates({
+    baseCurrency: 'USD',
+    refreshInterval: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Locale-based unit detection
+  const [localeUnitSystem, setLocaleUnitSystem] = useState<'metric' | 'imperial'>('metric');
+  const [defaultLengthUnit, setDefaultLengthUnit] = useState<'km' | 'mi' | 'm' | 'ft'>('km');
+
+  useEffect(() => {
+    const unitSystem = getUnitSystem();
+    const lengthUnit = getDefaultLengthUnit();
+    setLocaleUnitSystem(unitSystem);
+    setDefaultLengthUnit(lengthUnit);
+  }, []);
 
   // Fetch calculator data
   useEffect(() => {
@@ -108,6 +127,34 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
               initialValues[inputName] = input.defaultValue?.toString() || '';
             });
             setInputValues(initialValues);
+
+            // Set locale-based default units for length inputs in radio mode
+            if (options[0].inputs.length > 0) {
+              const initialInputUnits: Record<string, string> = {};
+              options[0].inputs.forEach((input: any) => {
+                const inputName = input.name || input.label || input.key || `input_${input.id}`;
+                
+                // If input has unit options and is a length type, set locale-based default
+                if (input.unitOptions && input.unitOptions.length > 0 && input.unitType === 'length') {
+                  const localeUnit = defaultLengthUnit; // 'km' or 'mi'
+                  const matchingOption = input.unitOptions.find((opt: any) => 
+                    opt.value === localeUnit || opt.label?.toLowerCase().includes(localeUnit)
+                  );
+                  
+                  if (matchingOption) {
+                    initialInputUnits[inputName] = matchingOption.value;
+                  } else if (input.defaultUnit) {
+                    initialInputUnits[inputName] = input.defaultUnit;
+                  } else {
+                    initialInputUnits[inputName] = input.unitOptions[0].value;
+                  }
+                }
+              });
+              
+              if (Object.keys(initialInputUnits).length > 0) {
+                setSelectedInputUnits(prev => ({ ...prev, ...initialInputUnits }));
+              }
+            }
           }
         } else {
           // Standard mode - Initialize input values normally
@@ -130,6 +177,34 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
             initialValues[inputName] = input.defaultValue?.toString() || '';
           });
           setInputValues(initialValues);
+
+          // Set locale-based default units for length inputs
+          if (inputs.length > 0) {
+            const initialInputUnits: Record<string, string> = {};
+            inputs.forEach((input: any) => {
+              const inputName = input.name || input.label || input.key || `input_${input.id}`;
+              
+              // If input has unit options and is a length type, set locale-based default
+              if (input.unitOptions && input.unitOptions.length > 0 && input.unitType === 'length') {
+                const localeUnit = defaultLengthUnit; // 'km' or 'mi'
+                const matchingOption = input.unitOptions.find((opt: any) => 
+                  opt.value === localeUnit || opt.label?.toLowerCase().includes(localeUnit)
+                );
+                
+                if (matchingOption) {
+                  initialInputUnits[inputName] = matchingOption.value;
+                } else if (input.defaultUnit) {
+                  initialInputUnits[inputName] = input.defaultUnit;
+                } else {
+                  initialInputUnits[inputName] = input.unitOptions[0].value;
+                }
+              }
+            });
+            
+            if (Object.keys(initialInputUnits).length > 0) {
+              setSelectedInputUnits(prev => ({ ...prev, ...initialInputUnits }));
+            }
+          }
         }
 
         // Initialize sub-calculator input values
@@ -922,12 +997,24 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
 
               if (fmt === 'currency') {
                 try {
+                  // Check if we have exchange rates and need to convert
+                  let convertedValue = numVal;
+                  const targetCurrency = currUnit && currUnit.length === 3 ? currUnit.toUpperCase() : 'USD';
+                  
+                  // If exchange rates are available and target currency is different from base
+                  if (exchangeRatesData && targetCurrency !== 'USD') {
+                    const converted = convertCurrency(numVal, 'USD', targetCurrency);
+                    if (converted !== null) {
+                      convertedValue = converted;
+                    }
+                  }
+                  
                   return new Intl.NumberFormat('en-US', {
                     style: 'currency',
-                    currency: currUnit && currUnit.length === 3 ? currUnit.toUpperCase() : 'USD',
+                    currency: targetCurrency,
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
-                  }).format(numVal);
+                  }).format(convertedValue);
                 } catch {
                   return new Intl.NumberFormat('en-US', {
                     style: 'currency',
