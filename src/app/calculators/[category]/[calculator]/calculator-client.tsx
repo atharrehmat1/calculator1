@@ -14,6 +14,28 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import { UNIT_GROUPS } from '@/constants/units_config';
+import { getExchangeRates } from '@/lib/exchange-rate';
+
+const REGION_CURRENCY_MAP: Record<string, string> = {
+  US: 'USD', GB: 'GBP', CA: 'CAD', AU: 'AUD',
+  IN: 'INR', PK: 'PKR', AE: 'AED', SA: 'SAR',
+  TR: 'TRY', RU: 'RUB', TH: 'THB', MY: 'MYR',
+  ID: 'IDR', PH: 'PHP', VN: 'VND',
+  FR: 'EUR', DE: 'EUR', IT: 'EUR', ES: 'EUR', NL: 'EUR', IE: 'EUR',
+  CH: 'CHF', CN: 'CNY', HK: 'HKD', NZ: 'NZD',
+  SG: 'SGD', KR: 'KRW', MX: 'MXN', BR: 'BRL',
+  ZA: 'ZAR', SE: 'SEK', JP: 'JPY'
+};
+
+const IMPERIAL_OVERRIDES: Record<string, string> = {
+  Length: 'in',
+  Weight: 'lbs',
+  Temperature: 'F',
+  Volume: 'gal'
+};
+
+const IMPERIAL_COUNTRIES = ['US', 'LR', 'MM'];
 
 interface CalculatorClientProps {
   categorySlug: string;
@@ -38,6 +60,8 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
   const [subCalcResults, setSubCalcResults] = useState<Record<string, Record<string, any>>>({});
   const [selectedInputUnits, setSelectedInputUnits] = useState<Record<string, string>>({});
   const [selectedResultUnits, setSelectedResultUnits] = useState<Record<string, string>>({});
+  const [currencyRates, setCurrencyRates] = useState<Record<string, number>>({});
+  const [hasLocalized, setHasLocalized] = useState(false);
 
   // Fetch calculator data
   useEffect(() => {
@@ -81,6 +105,19 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
         }
 
         setCalculator(calc);
+
+        // Pre-fetch currency rates if needed
+        const hasCurrencyFields = [
+          ...(calc.inputs || []),
+          ...(calc.results || []),
+          ...(calc.radio_options?.flatMap((opt: any) => [...(opt.inputs || []), ...(opt.results || [])]) || [])
+        ].some((field: any) => field.unitCategory === 'Currency');
+
+        if (hasCurrencyFields) {
+          getExchangeRates().then(rates => {
+            if (rates) setCurrencyRates(rates);
+          });
+        }
 
         // Check if calculator has radio modes
         if (calc.has_radio_modes && calc.radio_options) {
@@ -275,11 +312,30 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
           let value = parseFloat(rawValue);
           value = isNaN(value) ? 0 : value;
           
-          if (input.hasUnitDropdown && input.unitOptions) {
-            const selectedUnitVal = selectedInputUnits[inputName] || input.defaultUnit || input.unitOptions[0]?.value;
-            const option = input.unitOptions.find((opt: any) => opt.value === selectedUnitVal);
-            if (option && option.multiplier) {
-              value = value * option.multiplier;
+          if (input.unitCategory && UNIT_GROUPS[input.unitCategory]) {
+            let multiplier = 1;
+            const unitName = input.name || input.label || input.key;
+            const group = UNIT_GROUPS[input.unitCategory];
+            const groupUnits = group.units;
+            
+            // Re-validate unit to prevent legacy "unit_1" fallback
+            let selectedUnit = selectedInputUnits[unitName] || input.defaultUnit;
+            if (!groupUnits[selectedUnit]) {
+              selectedUnit = group.base;
+            }
+            const unitData = groupUnits[selectedUnit];
+            
+            // Handle Dynamic Multipliers (Currency)
+            if (group.isDynamic && input.unitCategory === 'Currency' && currencyRates) {
+              const baseRate = currencyRates[group.base] || 1;
+              const targetRate = currencyRates[selectedUnit] || currencyRates[group.base] || 1;
+              multiplier = baseRate / targetRate;
+              value = value * multiplier;
+            } else {
+              // Static Multipliers (Length, Weight, etc.)
+              multiplier = unitData?.multiplier || 1;
+              const offset = unitData?.offset || 0;
+              value = (value + offset) * multiplier;
             }
           }
           
@@ -897,15 +953,30 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
             let displayUnit = result.unit || '';
             const resultKey = result.key || result.name || result.label || `result_${result.id}`;
             
-            if (result.hasUnitDropdown && result.unitOptions && typeof finalValue === 'number' && !isNaN(finalValue)) {
-              const selectedUnitVal = selectedResultUnits[resultKey] || result.defaultUnit || result.unitOptions[0]?.value;
-              const option = result.unitOptions.find((opt: any) => opt.value === selectedUnitVal);
+            if (result.unitCategory && UNIT_GROUPS[result.unitCategory] && typeof finalValue === 'number' && !isNaN(finalValue)) {
+              const group = UNIT_GROUPS[result.unitCategory];
+              const groupUnits = group.units;
               
-              if (option) {
-                if (option.multiplier && option.multiplier !== 0) {
-                  finalValue = finalValue / option.multiplier;
-                }
-                displayUnit = option.label;
+              // Validate unit fallback
+              let selectedUnitVal = selectedResultUnits[resultKey] || result.defaultUnit;
+              if (!groupUnits[selectedUnitVal]) {
+                selectedUnitVal = group.base;
+              }
+              const unitData = groupUnits[selectedUnitVal];
+              
+              // Handle Dynamic Multipliers (Currency)
+              if (group.isDynamic && result.unitCategory === 'Currency' && currencyRates) {
+                const baseRate = currencyRates[group.base] || 1;
+                const targetRate = currencyRates[selectedUnitVal] || currencyRates[group.base] || 1;
+                const multiplier = baseRate / targetRate;
+                finalValue = finalValue / multiplier;
+                displayUnit = selectedUnitVal;
+              } else {
+                // Static Multipliers (Length, Weight, etc.) with Offset support
+                const multiplier = unitData?.multiplier || 1;
+                const offset = unitData?.offset || 0;
+                finalValue = (finalValue / multiplier) - offset;
+                displayUnit = selectedUnitVal;
               }
             }
 
@@ -987,13 +1058,211 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
     setInputValues(newValues);
   };
 
-  const handleInputUnitChange = (inputName: string, unitValue: string) => {
-    setSelectedInputUnits(prev => ({ ...prev, [inputName]: unitValue }));
+  const handleInputUnitChange = (inputName: string, newUnit: string, unitCategory?: string, defaultUnit?: string) => {
+    // If we have a category, do automatic value conversion
+    if (unitCategory && UNIT_GROUPS[unitCategory] && inputValues[inputName] !== undefined && inputValues[inputName] !== '') {
+      const rawValue = parseFloat(inputValues[inputName] as string);
+      if (!isNaN(rawValue)) {
+        const group = UNIT_GROUPS[unitCategory];
+        
+        let oldUnit: string = selectedInputUnits[inputName] || defaultUnit || group.base;
+        if (!group.units[oldUnit]) oldUnit = group.base;
+        
+        if (oldUnit !== newUnit) {
+          let newValue = rawValue;
+          
+          if (group.isDynamic && unitCategory === 'Currency' && currencyRates) {
+            const oldRate = currencyRates[oldUnit] || 1;
+            const newRate = currencyRates[newUnit] || 1;
+            newValue = (rawValue / oldRate) * newRate;
+          } else {
+            const oldData = group.units[oldUnit];
+            const newData = group.units[newUnit];
+            if (oldData && newData) {
+              const baseValue = (rawValue + (oldData.offset || 0)) * (oldData.multiplier || 1);
+              newValue = (baseValue / (newData.multiplier || 1)) - (newData.offset || 0);
+            }
+          }
+          
+          newValue = Math.round(newValue * 10000000) / 10000000;
+          setInputValues(prev => ({ ...prev, [inputName]: newValue.toString() }));
+        }
+      }
+    }
+    
+    setSelectedInputUnits(prev => ({ ...prev, [inputName]: newUnit }));
+  };
+
+  const handleSubCalcInputUnitChange = (subId: string, inputName: string, newUnit: string, unitCategory?: string, defaultUnit?: string) => {
+    const key = `sub_${subId}_${inputName}`;
+    const currentValue = (subCalcInputValues[subId] || {})[inputName];
+    
+    if (unitCategory && UNIT_GROUPS[unitCategory] && currentValue !== undefined && currentValue !== '') {
+      const rawValue = parseFloat(currentValue);
+      if (!isNaN(rawValue)) {
+        const group = UNIT_GROUPS[unitCategory];
+        
+        let oldUnit: string = selectedInputUnits[key] || defaultUnit || group.base;
+        if (!group.units[oldUnit]) oldUnit = group.base;
+        
+        if (oldUnit !== newUnit) {
+          let newValue = rawValue;
+          
+          if (group.isDynamic && unitCategory === 'Currency' && currencyRates) {
+            const oldRate = currencyRates[oldUnit] || 1;
+            const newRate = currencyRates[newUnit] || 1;
+            newValue = (rawValue / oldRate) * newRate;
+          } else {
+            const oldData = group.units[oldUnit];
+            const newData = group.units[newUnit];
+            if (oldData && newData) {
+              const baseValue = (rawValue + (oldData.offset || 0)) * (oldData.multiplier || 1);
+              newValue = (baseValue / (newData.multiplier || 1)) - (newData.offset || 0);
+            }
+          }
+          
+          newValue = Math.round(newValue * 10000000) / 10000000;
+          setSubCalcInputValues(prev => ({
+            ...prev,
+            [subId]: { ...(prev[subId] || {}), [inputName]: newValue.toString() }
+          }));
+        }
+      }
+    }
+    
+    setSelectedInputUnits(prev => ({ ...prev, [key]: newUnit }));
   };
 
   const handleResultUnitChange = (resultKey: string, unitValue: string) => {
     setSelectedResultUnits(prev => ({ ...prev, [resultKey]: unitValue }));
   };
+
+  // Auto-localization for region-specific units and currency
+  useEffect(() => {
+    if (hasLocalized || !calculator) return;
+
+    const performLocalization = async () => {
+      try {
+        let countryCode = '';
+        
+        // 1. Try to get cached country code to prevent hitting API repeatedly
+        try {
+          const cached = localStorage.getItem('user_country');
+          if (cached) countryCode = cached;
+        } catch (e) {}
+
+        // 2. Fetch from IP API if not cached (best for precision, e.g. en-US in Pakistan)
+        if (!countryCode) {
+          try {
+            const res = await fetch('https://ipapi.co/country/', { method: 'GET' });
+            if (res.ok) {
+              const text = await res.text();
+              const code = text.trim().toUpperCase();
+              if (code && code.length === 2) {
+                countryCode = code;
+                try { localStorage.setItem('user_country', code); } catch (e) {}
+              }
+            }
+          } catch (e) {
+            console.warn("IP geolocation failed, falling back to locale.");
+          }
+        }
+
+        // 3. Fallback to Browser Locale
+        if (!countryCode) {
+          const locale = navigator.language || navigator.languages?.[0] || '';
+          countryCode = locale.includes('-') ? locale.split('-')[1].toUpperCase() : '';
+        }
+
+        if (!countryCode) {
+          setHasLocalized(true);
+          return;
+        }
+
+        const isImperial = IMPERIAL_COUNTRIES.includes(countryCode);
+        const targetCurrency = REGION_CURRENCY_MAP[countryCode] || null;
+
+        if (!isImperial && !targetCurrency) {
+          setHasLocalized(true);
+          return;
+        }
+
+        const applyLocalization = (itemCategory: string, defaultUnit: string, currentValue: string, callback: (u: string) => void) => {
+          let overrideUnit = null;
+          const group = UNIT_GROUPS[itemCategory];
+          if (!group) return;
+
+          if (itemCategory === 'Currency' && targetCurrency && group.units[targetCurrency]) {
+             overrideUnit = targetCurrency;
+          } else if (isImperial && IMPERIAL_OVERRIDES[itemCategory] && group.units[IMPERIAL_OVERRIDES[itemCategory]]) {
+             overrideUnit = IMPERIAL_OVERRIDES[itemCategory];
+          }
+
+          const activeUnit = currentValue || defaultUnit || group.base;
+          if (overrideUnit && overrideUnit !== activeUnit) {
+             callback(overrideUnit);
+          }
+        };
+
+        const timer = setTimeout(() => {
+          let inputs: any[] = [];
+          try { inputs = Array.isArray(calculator.inputs) ? calculator.inputs : JSON.parse(calculator.inputs || "[]"); } catch {}
+          inputs.forEach(input => {
+            const name = input.name || input.label || input.key || `input_${input.id || Math.random()}`;
+            if (name && input.unitCategory) {
+              applyLocalization(input.unitCategory, input.defaultUnit, selectedInputUnits[name], 
+                (newUnit) => handleInputUnitChange(name, newUnit, input.unitCategory, input.defaultUnit));
+            }
+          });
+
+          let radios: any[] = [];
+          try { radios = Array.isArray(calculator.radio_options) ? calculator.radio_options : JSON.parse((calculator.radio_options as any) || "[]"); } catch {}
+          radios.forEach(opt => {
+            (opt.inputs || []).forEach((input: any, idx: number) => {
+              const name = input.name || input.label || input.key || `input_${input.id || idx}`;
+              if (name && input.unitCategory) {
+                applyLocalization(input.unitCategory, input.defaultUnit, selectedInputUnits[name], 
+                  (newUnit) => handleInputUnitChange(name, newUnit, input.unitCategory, input.defaultUnit));
+              }
+            });
+          });
+
+          let subs: any[] = [];
+          try { subs = Array.isArray(calculator.sub_calculators) ? calculator.sub_calculators : JSON.parse(calculator.sub_calculators || "[]"); } catch {}
+          subs.forEach(sub => {
+            (sub.inputs || []).forEach((input: any, idx: number) => {
+              const name = input.name || input.label || input.key || `input_${input.id || idx}`;
+              if (name && input.unitCategory) {
+                applyLocalization(input.unitCategory, input.defaultUnit, selectedInputUnits[`sub_${sub.id}_${name}`], 
+                  (newUnit) => handleSubCalcInputUnitChange(sub.id, name, newUnit, input.unitCategory, input.defaultUnit));
+              }
+            });
+          });
+
+          let resultsArr: any[] = [];
+          try { resultsArr = Array.isArray(calculator.results) ? calculator.results : JSON.parse(calculator.results || "[]"); } catch {}
+          resultsArr.forEach((result, idx) => {
+            const key = result.key || result.label || `res_${idx}`;
+            if (key && result.unitCategory) {
+              applyLocalization(result.unitCategory, result.defaultUnit, selectedResultUnits[key], 
+                (newUnit) => handleResultUnitChange(key, newUnit));
+            }
+          });
+
+          setHasLocalized(true);
+        }, 50); // slight delay to allow first render
+          
+        return () => clearTimeout(timer);
+      } catch (e) {
+        console.warn("Localization failed", e);
+        setHasLocalized(true);
+      }
+    };
+    
+    performLocalization();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasLocalized, calculator]);
 
   // Handle radio option change
   const handleRadioOptionChange = (optionId: string) => {
@@ -1054,8 +1323,27 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
         const inputName = input.name || input.label || input.key;
         const raw = vals[inputName] || '';
         const key = input.key || inputName;
+        
         if (input.type === 'number' || input.type === 'integer' || input.type === 'percent') {
-          const v = parseFloat(raw); subInputValues[key] = isNaN(v) ? 0 : v;
+          let v = parseFloat(raw);
+          v = isNaN(v) ? 0 : v;
+          
+          if (input.unitCategory && UNIT_GROUPS[input.unitCategory]) {
+            const group = UNIT_GROUPS[input.unitCategory];
+            const selectedUnit = (selectedInputUnits[`sub_${sub.id}_${inputName}`]) || input.defaultUnit || group.base;
+            const unitData = group.units[selectedUnit] || group.units[group.base];
+            
+            if (group.isDynamic && input.unitCategory === 'Currency' && currencyRates) {
+              const baseRate = currencyRates[group.base] || 1;
+              const targetRate = currencyRates[selectedUnit] || currencyRates[group.base] || 1;
+              v = v * (baseRate / targetRate);
+            } else {
+              const multiplier = unitData?.multiplier || 1;
+              const offset = unitData?.offset || 0;
+              v = (v + offset) * multiplier;
+            }
+          }
+          subInputValues[key] = v;
         } else {
           subInputValues[key] = raw;
         }
@@ -1077,14 +1365,38 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
           const formula = result.formula || '';
           const fn = new Function(...Object.keys({ ...scope, ...computed }), `return (${formula})`);
           const value = fn(...Object.values({ ...scope, ...computed }));
+          let finalValue = value;
+          let displayUnit = result.unit || '';
+          const resultKey = `sub_${sub.id}_${result.key || result.label}`;
           const key = result.key || result.label;
+          
+          if (result.unitCategory && UNIT_GROUPS[result.unitCategory] && typeof value === 'number') {
+            const group = UNIT_GROUPS[result.unitCategory];
+            const selectedUnitVal = selectedResultUnits[resultKey] || result.defaultUnit || group.base;
+            const unitData = group.units[selectedUnitVal] || group.units[group.base];
+            
+            if (group.isDynamic && result.unitCategory === 'Currency' && currencyRates) {
+              const baseRate = currencyRates[group.base] || 1;
+              const targetRate = currencyRates[selectedUnitVal] || currencyRates[group.base] || 1;
+              finalValue = finalValue / (baseRate / targetRate);
+              displayUnit = selectedUnitVal;
+            } else {
+              const multiplier = unitData?.multiplier || 1;
+              const offset = unitData?.offset || 0;
+              finalValue = (finalValue / multiplier) - offset;
+              displayUnit = selectedUnitVal;
+            }
+          }
+
           computed[key] = value;
           allSubResults[sub.id] = allSubResults[sub.id] || {};
           allSubResults[sub.id][key] = {
             label: result.label,
-            value,
-            unit: result.unit,
+            value: typeof finalValue === 'number' ? parseFloat(finalValue.toFixed(2)) : finalValue,
+            unit: displayUnit,
             format: result.format,
+            unitCategory: result.unitCategory,
+            key: key
           };
         } catch (e) { /* skip errors */ }
       });
@@ -1197,10 +1509,10 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
                           <div key={index} className="space-y-2">
                             <Label htmlFor={inputName}>
                               {input.label || input.name || `Input ${index + 1}`}
-                              {input.unit && !input.hasUnitDropdown && <span className="text-muted-foreground ml-1">({input.unit})</span>}
+                              {input.unit && !input.unitCategory && <span className="text-muted-foreground ml-1">({input.unit})</span>}
                               {input.required && <span className="text-red-500 ml-1">*</span>}
                             </Label>
-                            <div className="flex gap-2">
+                            <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring overflow-hidden shadow-sm transition-shadow">
                               <Input
                                 id={inputName}
                                 type={input.type || 'number'}
@@ -1209,24 +1521,28 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
                                 onChange={(e) => handleInputChange(inputName, e.target.value)}
                                 min={input.min}
                                 max={input.max}
-                                className="flex-1"
+                                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 rounded-none"
                               />
-                              {input.hasUnitDropdown && input.unitOptions && (
-                                <Select
-                                  value={selectedInputUnits[inputName] || input.defaultUnit || input.unitOptions[0]?.value || ''}
-                                  onValueChange={(val) => handleInputUnitChange(inputName, val)}
-                                >
-                                  <SelectTrigger className="w-[120px]">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {input.unitOptions.map((opt: any) => (
-                                      <SelectItem key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                              {input.unitCategory && UNIT_GROUPS[input.unitCategory] && (
+                                <div className="border-l bg-muted/20">
+                                  <Select
+                                    value={selectedInputUnits[inputName] || (UNIT_GROUPS[input.unitCategory].units[input.defaultUnit || ''] ? input.defaultUnit : UNIT_GROUPS[input.unitCategory].base) || ''}
+                                    onValueChange={(val) => handleInputUnitChange(inputName, val, input.unitCategory, input.defaultUnit)}
+                                  >
+                                    <SelectTrigger className="w-auto min-w-[80px] border-0 bg-transparent shadow-none focus:ring-0 rounded-none h-10 px-3">
+                                      <span className="font-medium">
+                                        {selectedInputUnits[inputName] || (UNIT_GROUPS[input.unitCategory].units[input.defaultUnit || ''] ? input.defaultUnit : UNIT_GROUPS[input.unitCategory].base) || ''}
+                                      </span>
+                                    </SelectTrigger>
+                                    <SelectContent position="popper" className="max-h-[300px]">
+                                      {Object.entries(UNIT_GROUPS[input.unitCategory].units).map(([unitKey, unit]: [string, any]) => (
+                                        <SelectItem key={unitKey} value={unitKey}>
+                                          {unit.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
                               )}
                             </div>
                             {input.description && (
@@ -1248,18 +1564,20 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
                         <div key={key} className="p-4 bg-muted rounded-lg flex flex-col justify-between">
                           <div className="flex justify-between items-start mb-2">
                             <span className="text-sm text-muted-foreground">{result.label || key}</span>
-                            {result.hasUnitDropdown && result.unitOptions && (
+                            {result.unitCategory && UNIT_GROUPS[result.unitCategory] && (
                               <Select
-                                value={selectedResultUnits[key] || result.defaultUnit || result.unitOptions[0]?.value || ''}
+                                value={selectedResultUnits[key] || (UNIT_GROUPS[result.unitCategory].units[result.defaultUnit || ''] ? result.defaultUnit : UNIT_GROUPS[result.unitCategory].base) || ''}
                                 onValueChange={(val) => handleResultUnitChange(key, val)}
                               >
                                 <SelectTrigger className="h-7 text-xs w-auto min-w-[80px] border bg-background shadow-sm">
-                                  <SelectValue />
+                                  <span className="font-medium">
+                                    {selectedResultUnits[key] || (UNIT_GROUPS[result.unitCategory].units[result.defaultUnit || ''] ? result.defaultUnit : UNIT_GROUPS[result.unitCategory].base) || ''}
+                                  </span>
                                 </SelectTrigger>
-                                <SelectContent>
-                                  {result.unitOptions.map((opt: any) => (
-                                    <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                                      {opt.label}
+                                <SelectContent position="popper" className="max-h-[300px]">
+                                  {Object.entries(UNIT_GROUPS[result.unitCategory].units).map(([unitKey, unit]: [string, any]) => (
+                                    <SelectItem key={unitKey} value={unitKey} className="text-xs">
+                                      {unit.label}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -1308,34 +1626,38 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
                           <div key={index} className="space-y-2">
                             <Label htmlFor={inputName}>
                               {input.label || input.name || `Input ${index + 1}`}
-                              {input.unit && !input.hasUnitDropdown && <span className="text-muted-foreground ml-1">({input.unit})</span>}
+                              {input.unit && !input.unitCategory && <span className="text-muted-foreground ml-1">({input.unit})</span>}
                               {input.required && <span className="text-red-500 ml-1">*</span>}
                             </Label>
-                            <div className="flex gap-2">
+                            <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring overflow-hidden shadow-sm transition-shadow">
                               <Input
                                 id={inputName}
                                 type={input.type || 'number'}
                                 placeholder={input.placeholder || `Enter ${input.label || input.name}`}
                                 value={inputValues[inputName] || ''}
                                 onChange={(e) => handleInputChange(inputName, e.target.value)}
-                                className="flex-1"
+                                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 rounded-none"
                               />
-                              {input.hasUnitDropdown && input.unitOptions && (
-                                <Select
-                                  value={selectedInputUnits[inputName] || input.defaultUnit || input.unitOptions[0]?.value || ''}
-                                  onValueChange={(val) => handleInputUnitChange(inputName, val)}
-                                >
-                                  <SelectTrigger className="w-[120px]">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {input.unitOptions.map((opt: any) => (
-                                      <SelectItem key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                              {input.unitCategory && UNIT_GROUPS[input.unitCategory] && (
+                                <div className="border-l bg-muted/20">
+                                  <Select
+                                    value={selectedInputUnits[inputName] || (UNIT_GROUPS[input.unitCategory].units[input.defaultUnit || ''] ? input.defaultUnit : UNIT_GROUPS[input.unitCategory].base) || ''}
+                                    onValueChange={(val) => handleInputUnitChange(inputName, val, input.unitCategory, input.defaultUnit)}
+                                  >
+                                    <SelectTrigger className="w-auto min-w-[80px] border-0 bg-transparent shadow-none focus:ring-0 rounded-none h-10 px-3">
+                                      <span className="font-medium">
+                                        {selectedInputUnits[inputName] || (UNIT_GROUPS[input.unitCategory].units[input.defaultUnit || ''] ? input.defaultUnit : UNIT_GROUPS[input.unitCategory].base) || ''}
+                                      </span>
+                                    </SelectTrigger>
+                                    <SelectContent position="popper" className="max-h-[300px]">
+                                      {Object.entries(UNIT_GROUPS[input.unitCategory].units).map(([unitKey, unit]: [string, any]) => (
+                                        <SelectItem key={unitKey} value={unitKey}>
+                                          {unit.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
                               )}
                             </div>
                             {input.description && (
@@ -1355,18 +1677,20 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
                             <div key={key} className="p-4 bg-muted rounded-lg flex flex-col justify-between">
                               <div className="flex justify-between items-start mb-2">
                                 <span className="text-sm text-muted-foreground">{result.label || key}</span>
-                                {result.hasUnitDropdown && result.unitOptions && (
+                                {result.unitCategory && UNIT_GROUPS[result.unitCategory] && (
                                   <Select
-                                    value={selectedResultUnits[key] || result.defaultUnit || result.unitOptions[0]?.value || ''}
+                                    value={selectedResultUnits[key] || (UNIT_GROUPS[result.unitCategory].units[result.defaultUnit || ''] ? result.defaultUnit : UNIT_GROUPS[result.unitCategory].base) || ''}
                                     onValueChange={(val) => handleResultUnitChange(key, val)}
                                   >
                                     <SelectTrigger className="h-7 text-xs w-auto min-w-[80px] border bg-background shadow-sm">
-                                      <SelectValue />
+                                      <span className="font-medium">
+                                        {selectedResultUnits[key] || (UNIT_GROUPS[result.unitCategory].units[result.defaultUnit || ''] ? result.defaultUnit : UNIT_GROUPS[result.unitCategory].base) || ''}
+                                      </span>
                                     </SelectTrigger>
-                                    <SelectContent>
-                                      {result.unitOptions.map((opt: any) => (
-                                        <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                                          {opt.label}
+                                    <SelectContent position="popper" className="max-h-[300px]">
+                                      {Object.entries(UNIT_GROUPS[result.unitCategory].units).map(([unitKey, unit]: [string, any]) => (
+                                        <SelectItem key={unitKey} value={unitKey} className="text-xs">
+                                          {unit.label}
                                         </SelectItem>
                                       ))}
                                     </SelectContent>
@@ -1431,13 +1755,37 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
                               {input.label || input.name || `Input ${index + 1}`}
                               {input.unit && <span className="text-muted-foreground ml-1">({input.unit})</span>}
                             </Label>
-                            <Input
-                              id={`${subId}_${inputName}`}
-                              type={input.type || 'number'}
-                              placeholder={input.placeholder || `Enter ${input.label || input.name}`}
-                              value={(subCalcInputValues[subId] || {})[inputName] || ''}
-                              onChange={(e) => handleSubCalcInputChange(subId, inputName, e.target.value)}
-                            />
+                            <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring overflow-hidden shadow-sm transition-shadow">
+                              <Input
+                                id={`${subId}_${inputName}`}
+                                type={input.type || 'number'}
+                                placeholder={input.placeholder || `Enter ${input.label || input.name}`}
+                                value={(subCalcInputValues[subId] || {})[inputName] || ''}
+                                onChange={(e) => handleSubCalcInputChange(subId, inputName, e.target.value)}
+                                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 rounded-none"
+                              />
+                              {input.unitCategory && UNIT_GROUPS[input.unitCategory] && (
+                                <div className="border-l bg-muted/20">
+                                  <Select
+                                    value={selectedInputUnits[`sub_${subId}_${inputName}`] || (UNIT_GROUPS[input.unitCategory].units[input.defaultUnit || ''] ? input.defaultUnit : UNIT_GROUPS[input.unitCategory].base)}
+                                    onValueChange={(val) => handleSubCalcInputUnitChange(subId, inputName, val, input.unitCategory, input.defaultUnit)}
+                                  >
+                                    <SelectTrigger className="w-auto min-w-[80px] border-0 bg-transparent shadow-none focus:ring-0 rounded-none h-10 px-3">
+                                      <span className="font-medium">
+                                        {selectedInputUnits[`sub_${subId}_${inputName}`] || (UNIT_GROUPS[input.unitCategory].units[input.defaultUnit || ''] ? input.defaultUnit : UNIT_GROUPS[input.unitCategory].base)}
+                                      </span>
+                                    </SelectTrigger>
+                                    <SelectContent position="popper" className="max-h-[300px]">
+                                      {Object.entries(UNIT_GROUPS[input.unitCategory].units).map(([unitKey, unit]: [string, any]) => (
+                                        <SelectItem key={unitKey} value={unitKey}>
+                                          {unit.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
@@ -1448,21 +1796,45 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
                     <div className="mt-6 space-y-4">
                       <h3 className="text-lg font-semibold">Results</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.entries(subResults).map(([key, result]: [string, any]) => (
-                          <div key={key} className="p-4 bg-muted rounded-lg">
-                            <div className="text-sm text-muted-foreground mb-1">{result.label || key}</div>
-                            <div className="text-2xl font-bold">
-                              {result.format === 'currency'
-                                ? result.value
-                                : typeof result.value === 'number'
-                                  ? result.value.toFixed(2)
-                                  : result.value}
-                              {result.unit && result.format !== 'currency' && result.format !== 'percent' && (
-                                <span className="text-lg ml-1">{result.unit}</span>
-                              )}
+                        {Object.entries(subResults).map(([key, result]: [string, any]) => {
+                          const resultKey = `sub_${subId}_${result.key || result.label || key}`;
+                          return (
+                            <div key={key} className="p-4 bg-muted rounded-lg flex flex-col justify-between">
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="text-sm text-muted-foreground">{result.label || key}</span>
+                                {result.unitCategory && UNIT_GROUPS[result.unitCategory] && (
+                                  <Select
+                                    value={selectedResultUnits[resultKey] || (UNIT_GROUPS[result.unitCategory].units[result.defaultUnit || ''] ? result.defaultUnit : UNIT_GROUPS[result.unitCategory].base)}
+                                    onValueChange={(val) => handleResultUnitChange(resultKey, val)}
+                                  >
+                                    <SelectTrigger className="h-7 text-xs w-auto min-w-[80px] border bg-background shadow-sm">
+                                      <span className="font-medium">
+                                        {selectedResultUnits[resultKey] || (UNIT_GROUPS[result.unitCategory].units[result.defaultUnit || ''] ? result.defaultUnit : UNIT_GROUPS[result.unitCategory].base)}
+                                      </span>
+                                    </SelectTrigger>
+                                    <SelectContent position="popper" className="max-h-[300px]">
+                                      {Object.entries(UNIT_GROUPS[result.unitCategory].units).map(([unitKey, unit]: [string, any]) => (
+                                        <SelectItem key={unitKey} value={unitKey} className="text-xs">
+                                          {unit.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                              </div>
+                              <div className="text-2xl font-bold">
+                                {result.format === 'currency'
+                                  ? result.value
+                                  : typeof result.value === 'number'
+                                    ? result.value.toFixed(2)
+                                    : result.value}
+                                {result.unit && result.format !== 'currency' && result.format !== 'percent' && (
+                                  <span className="text-lg ml-1 font-normal text-muted-foreground">{result.unit}</span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

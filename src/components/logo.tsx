@@ -3,13 +3,25 @@ import Image from "next/image";
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <Image
-      src="/icon.png"
-      alt="Calculator1.org Logo"
-      width={28}
-      height={28}
-      className={cn("object-contain", className)}
-      priority
-    />
+    <div className={cn("relative", className)}>
+      <Image
+        src="/icon-light.png"
+        alt="Calculator1.org Logo"
+
+        className="dark:hidden object-contain"
+        priority
+        width={50}
+        height={50}
+      />
+      <Image
+        src="/icon-dark.png"
+        alt="Calculator1.org Logo"
+
+        className="hidden dark:block object-contain"
+        priority
+        width={50}
+        height={50}
+      />
+    </div>
   );
 }
