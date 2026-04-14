@@ -12,6 +12,13 @@ import { LanguageLinkInterceptor } from '@/components/language-link-interceptor'
 export const metadata: Metadata = {
   title: 'Calculator1.org',
   description: 'Over 3,700 free calculators in one place.',
+  icons: {
+    icon: '/favicon.png',
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({

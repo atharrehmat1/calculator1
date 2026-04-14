@@ -30,6 +30,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.8rem;
   }
+
   .dark {
     --background: 224 71% 4%;
     --foreground: 210 40% 98%;
@@ -62,7 +63,31 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Hide number input spin buttons */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 }
+
+@layer utilities {
+  .font-headline {
+    font-family: 'Poppins', sans-serif;
+  }
+  .font-body {
+    font-family: 'PT Sans', sans-serif;
+  }
+  .font-code {
+    font-family: monospace;
+  }
+}

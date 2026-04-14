@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.calculator1.org/api';
 
 // Radio option type for calculators with multiple modes
 export interface RadioOption {
@@ -33,6 +33,8 @@ export interface Calculator {
   // Radio mode fields
   has_radio_modes?: boolean;
   radio_options?: RadioOption[];
+  // How to use instructions
+  how_to_use?: string;
   // Sub-calculators
   sub_calculators?: any[];
 }
