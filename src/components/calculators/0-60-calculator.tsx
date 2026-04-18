@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ZeroToSixtyCalculator() {
   const [distance, setDistance] = useState("");
@@ -36,10 +37,10 @@ export function ZeroToSixtyCalculator() {
       const acceleration = (2 * distanceMeters) / (t * t); // m/s²
       const speed = avgVelocity * 2.237; // Convert to mph
       
-      setResult({
-        speed: speed,
-        acceleration: acceleration,
-      });
+      setResult(sanitizeResult({
+                    speed: speed,
+                    acceleration: acceleration,
+                  }));
     } else {
       setResult(null);
     }

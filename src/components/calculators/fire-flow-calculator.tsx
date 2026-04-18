@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function FireFlowCalculator() {
   const [area, setArea] = useState("");
@@ -27,7 +28,7 @@ export function FireFlowCalculator() {
       // Simplified: Q = 18 * A^0.5 for standard calculations
       const C = occ > 0 ? occ : 1.0;
       const flow = 18 * C * Math.sqrt(a);
-      setResult(flow);
+      setResult(sanitizeResult(flow));
     } else {
       setResult(null);
     }

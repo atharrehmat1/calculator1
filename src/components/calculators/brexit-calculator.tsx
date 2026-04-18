@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BrexitCalculator() {
   const [ukAmount, setUkAmount] = useState("");
@@ -32,11 +33,11 @@ export function BrexitCalculator() {
       const tariffCost = euEquivalent * (tariff / 100);
       const withTariff = euEquivalent + tariffCost;
       
-      setResult({
-        euEquivalent,
-        withTariff,
-        tariffCost,
-      });
+      setResult(sanitizeResult({
+              euEquivalent,
+              withTariff,
+              tariffCost,
+            }));
     } else {
       setResult(null);
     }

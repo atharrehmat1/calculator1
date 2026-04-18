@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const BATH_WATER_GALLONS = 36; // Average bath uses ~36 gallons
 const SHOWER_RATE_GPM = 2.1; // Average shower flow rate: 2.1 gallons per minute
@@ -35,12 +36,12 @@ export function BathVsShowerCalculator() {
       const difference = Math.abs(bathWater - showerWater);
       const savings = bathWater > showerWater ? difference : -difference;
       
-      setResult({
-        bathWater: bathWater,
-        showerWater: showerWater,
-        difference: difference,
-        savings: savings,
-      });
+      setResult(sanitizeResult({
+              bathWater: bathWater,
+              showerWater: showerWater,
+              difference: difference,
+              savings: savings,
+            }));
     } else {
       setResult(null);
     }

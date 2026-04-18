@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function CarryingCapacityCalculator() {
   const [area, setArea] = useState("");
@@ -26,7 +27,7 @@ export function CarryingCapacityCalculator() {
     if (A > 0 && R > 0 && C > 0) {
       // Carrying capacity = (Area × Resource Availability) / Resource Consumption per Individual
       const capacity = (A * R) / C;
-      setResult(capacity);
+      setResult(sanitizeResult(capacity));
     } else {
       setResult(null);
     }

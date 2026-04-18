@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const AVOGADRO = 6.022e23; // Avogadro's number
 
@@ -29,10 +30,10 @@ export function AtomCalculator() {
     if (m > 0 && MM > 0) {
       const moles = m / MM;
       const atoms = moles * AVOGADRO;
-      setResult({
-        moles: moles,
-        atoms: atoms,
-      });
+      setResult(sanitizeResult({
+              moles: moles,
+              atoms: atoms,
+            }));
     } else {
       setResult(null);
     }

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ApplianceDepreciationCalculator() {
   const [purchasePrice, setPurchasePrice] = useState("");
@@ -34,11 +35,11 @@ export function ApplianceDepreciationCalculator() {
       const currentValue = price - totalDepreciation;
       const depreciationRate = (totalDepreciation / price) * 100;
       
-      setResult({
-        currentValue: Math.max(0, currentValue),
-        depreciation: totalDepreciation,
-        depreciationRate: depreciationRate,
-      });
+      setResult(sanitizeResult({
+              currentValue: Math.max(0, currentValue),
+              depreciation: totalDepreciation,
+              depreciationRate: depreciationRate,
+            }));
     } else {
       setResult(null);
     }

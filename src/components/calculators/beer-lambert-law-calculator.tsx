@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BeerLambertLawCalculator() {
   const [absorbance, setAbsorbance] = useState("");
@@ -23,7 +24,7 @@ export function BeerLambertLawCalculator() {
     const ε = parseFloat(molarAbsorptivity);
     const l = parseFloat(pathLength);
     if (A > 0 && ε > 0 && l > 0) {
-      setResult(A / (ε * l));
+      setResult(sanitizeResult(A / (ε * l)));
     }
   };
 

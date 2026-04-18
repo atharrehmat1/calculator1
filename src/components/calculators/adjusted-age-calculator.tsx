@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AdjustedAgeCalculator() {
   const [chronologicalAge, setChronologicalAge] = useState("");
@@ -29,10 +30,10 @@ export function AdjustedAgeCalculator() {
       const adjustedAge = chrono - (weeks / 4);
       const adjustedAgeMonths = adjustedAge;
       
-      setResult({
-        adjustedAge: Math.max(0, adjustedAge),
-        adjustedAgeMonths: Math.max(0, adjustedAgeMonths),
-      });
+      setResult(sanitizeResult({
+              adjustedAge: Math.max(0, adjustedAge),
+              adjustedAgeMonths: Math.max(0, adjustedAgeMonths),
+            }));
     } else {
       setResult(null);
     }

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function FourZeroThreeBCalculator() {
   const [currentAge, setCurrentAge] = useState("");
@@ -46,11 +47,11 @@ export function FourZeroThreeBCalculator() {
       const totalContributions = balance + (monthly * months);
       const earnings = totalValue - totalContributions;
       
-      setResult({
-        totalContributions,
-        totalValue,
-        earnings,
-      });
+      setResult(sanitizeResult({
+              totalContributions,
+              totalValue,
+              earnings,
+            }));
     } else {
       setResult(null);
     }

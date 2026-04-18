@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ABSICalculator() {
   const [waist, setWaist] = useState("");
@@ -42,10 +43,10 @@ export function ABSICalculator() {
         interpretation = "High risk";
       }
       
-      setResult({
-        absi,
-        interpretation,
-      });
+      setResult(sanitizeResult({
+              absi,
+              interpretation,
+            }));
     } else {
       setResult(null);
     }

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AcresPerHourCalculator() {
   const [width, setWidth] = useState("");
@@ -27,7 +28,7 @@ export function AcresPerHourCalculator() {
       // Formula: (Width (ft) × Speed (mph) × Efficiency) / 8.25
       // 8.25 is the constant to convert to acres per hour
       const acresPerHour = (w * s * eff) / 8.25;
-      setResult(acresPerHour);
+      setResult(sanitizeResult(acresPerHour));
     }
   };
 

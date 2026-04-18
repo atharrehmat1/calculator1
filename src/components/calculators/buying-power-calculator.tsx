@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BuyingPowerCalculator() {
   const [amount, setAmount] = useState("");
@@ -34,11 +35,11 @@ export function BuyingPowerCalculator() {
       const purchasingPower = amt / Math.pow(1 + inflation, y);
       const loss = amt - purchasingPower;
       
-      setResult({
-        futureValue,
-        purchasingPower,
-        loss,
-      });
+      setResult(sanitizeResult({
+              futureValue,
+              purchasingPower,
+              loss,
+            }));
     } else {
       setResult(null);
     }

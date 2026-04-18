@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BillionToTrillionConverter() {
   const [value, setValue] = useState("");
@@ -54,7 +55,7 @@ export function BillionToTrillionConverter() {
         converted = billions * 1000000;
       }
       
-      setResult(converted);
+      setResult(sanitizeResult(converted));
     } else {
       setResult(null);
     }

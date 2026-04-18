@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ArithmeticSequenceCalculator() {
   const [firstTerm, setFirstTerm] = useState("");
@@ -32,10 +33,10 @@ export function ArithmeticSequenceCalculator() {
       const nthTerm = a + (num - 1) * d;
       const sum = (num / 2) * (2 * a + (num - 1) * d);
       
-      setResult({
-        nthTerm,
-        sum,
-      });
+      setResult(sanitizeResult({
+              nthTerm,
+              sum,
+            }));
     } else {
       setResult(null);
     }

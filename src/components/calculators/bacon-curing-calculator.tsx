@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BaconCuringCalculator() {
   const [porkWeight, setPorkWeight] = useState("");
@@ -38,12 +39,12 @@ export function BaconCuringCalculator() {
       // Assuming average bacon thickness of 1.5 inches
       const curingTime = 7 * 1.5;
       
-      setResult({
-        salt,
-        sugar,
-        pinkSalt,
-        curingTime,
-      });
+      setResult(sanitizeResult({
+              salt,
+              sugar,
+              pinkSalt,
+              curingTime,
+            }));
     } else {
       setResult(null);
     }

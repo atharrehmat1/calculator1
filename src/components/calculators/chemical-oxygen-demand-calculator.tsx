@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ChemicalOxygenDemandCalculator() {
   const [volumeSample, setVolumeSample] = useState("");
@@ -29,7 +30,7 @@ export function ChemicalOxygenDemandCalculator() {
       // COD (mg/L) = [(V_blank - V_titrant) × N × 8000] / V_sample
       // 8000 = equivalent weight of oxygen (8 g/mol) × 1000 (mg/g)
       const COD = ((V_blank - V_titrant) * N * 8000) / V_sample;
-      setResult(Math.max(0, COD)); // Ensure non-negative
+      setResult(sanitizeResult(Math.max(0, COD))); // Ensure non-negative
     } else {
       setResult(null);
     }

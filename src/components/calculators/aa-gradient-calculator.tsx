@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AAGradientCalculator() {
   const [pao2, setPao2] = useState("");
@@ -48,10 +49,10 @@ export function AAGradientCalculator() {
         interpretation = "Significantly elevated - may indicate V/Q mismatch";
       }
       
-      setResult({
-        gradient,
-        interpretation,
-      });
+      setResult(sanitizeResult({
+              gradient,
+              interpretation,
+            }));
     } else {
       setResult(null);
     }

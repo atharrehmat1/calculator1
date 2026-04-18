@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AlzheimersLifeExpectancyCalculator() {
   const [age, setAge] = useState("");
@@ -38,10 +39,10 @@ export function AlzheimersLifeExpectancyCalculator() {
       const ageAdjustment = a > 80 ? -2 : a > 70 ? -1 : 0;
       const lifeExpectancy = baseYears + ageAdjustment;
       
-      setResult({
-        lifeExpectancy: Math.max(1, lifeExpectancy),
-        note: "This is a general estimate. Individual outcomes vary significantly based on many factors.",
-      });
+      setResult(sanitizeResult({
+              lifeExpectancy: Math.max(1, lifeExpectancy),
+              note: "This is a general estimate. Individual outcomes vary significantly based on many factors.",
+            }));
     } else {
       setResult(null);
     }

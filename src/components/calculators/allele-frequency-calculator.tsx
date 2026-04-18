@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AlleleFrequencyCalculator() {
   const [homozygousDominant, setHomozygousDominant] = useState("");
@@ -29,7 +30,7 @@ export function AlleleFrequencyCalculator() {
       // q = frequency of recessive allele a
       const p = (2 * AA + Aa) / (2 * total);
       const q = (2 * aa + Aa) / (2 * total);
-      setResult({ p, q });
+      setResult(sanitizeResult({ p, q }));
     }
   };
 

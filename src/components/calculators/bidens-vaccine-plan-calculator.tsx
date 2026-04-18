@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BidensVaccinePlanCalculator() {
   const [population, setPopulation] = useState("");
@@ -32,11 +33,11 @@ export function BidensVaccinePlanCalculator() {
       const dailyCapacity = 1000000;
       const daysToComplete = remaining / dailyCapacity;
       
-      setResult({
-        vaccinated,
-        remaining,
-        daysToComplete,
-      });
+      setResult(sanitizeResult({
+              vaccinated,
+              remaining,
+              daysToComplete,
+            }));
     } else {
       setResult(null);
     }

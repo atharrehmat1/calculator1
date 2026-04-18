@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const CONVERSIONS: Record<string, number> = {
   "newton": 1,
@@ -40,7 +41,7 @@ export function ForceConverter() {
       // Convert to Newtons first, then to target unit
       const newtons = val * CONVERSIONS[fromUnit];
       const converted = newtons / CONVERSIONS[toUnit];
-      setResult(converted);
+      setResult(sanitizeResult(converted));
     } else {
       setResult(null);
     }

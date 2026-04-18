@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AddedSugarIntakeCalculator() {
   const [age, setAge] = useState("");
@@ -43,10 +44,10 @@ export function AddedSugarIntakeCalculator() {
         maxCalories = 1200;
       }
       
-      setResult({
-        maxSugar,
-        maxCalories: maxSugar * 4, // 4 calories per gram of sugar
-      });
+      setResult(sanitizeResult({
+              maxSugar,
+              maxCalories: maxSugar * 4, // 4 calories per gram of sugar
+            }));
     } else {
       setResult(null);
     }

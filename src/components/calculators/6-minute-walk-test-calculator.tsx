@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function SixMinuteWalkTestCalculator() {
   const [distance, setDistance] = useState("");
@@ -54,11 +55,11 @@ export function SixMinuteWalkTestCalculator() {
         interpretation = "Poor - consult healthcare provider";
       }
       
-      setResult({
-        predicted,
-        percentage,
-        interpretation,
-      });
+      setResult(sanitizeResult({
+              predicted,
+              percentage,
+              interpretation,
+            }));
     } else {
       setResult(null);
     }

@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ProgrammingCalculator() {
   const [input, setInput] = useState("");
@@ -42,16 +43,16 @@ export function ProgrammingCalculator() {
 
       // Convert from decimal to target base
       if (toBase === "decimal") {
-        setResult(decimal.toString());
+        setResult(sanitizeResult(decimal.toString()));
       } else if (toBase === "binary") {
-        setResult(decimal.toString(2));
+        setResult(sanitizeResult(decimal.toString(2)));
       } else if (toBase === "hex") {
-        setResult(decimal.toString(16).toUpperCase());
+        setResult(sanitizeResult(decimal.toString(16).toUpperCase()));
       } else {
-        setResult(decimal.toString(8));
+        setResult(sanitizeResult(decimal.toString(8)));
       }
     } catch (error) {
-      setResult("Invalid input");
+      setResult(sanitizeResult("Invalid input"));
     }
   };
 

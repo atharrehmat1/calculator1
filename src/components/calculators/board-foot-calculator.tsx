@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BoardFootCalculator() {
   const [length, setLength] = useState("");
@@ -29,7 +30,7 @@ export function BoardFootCalculator() {
       // Board foot = (length × width × thickness) / 12
       // All measurements in inches
       const boardFeet = (l * w * t * qty) / 12;
-      setResult(boardFeet);
+      setResult(sanitizeResult(boardFeet));
     } else {
       setResult(null);
     }

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X, Plus } from "lucide-react";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BasalAreaCalculator() {
   const [trees, setTrees] = useState<Array<{ dbh: string }>>([{ dbh: "" }]);
@@ -45,7 +46,7 @@ export function BasalAreaCalculator() {
       const basalArea = dbhValues.reduce((sum, dbh) => {
         return sum + 0.005454 * dbh * dbh; // 0.005454 = π/(4 × 144) conversion factor
       }, 0);
-      setResult(basalArea);
+      setResult(sanitizeResult(basalArea));
     }
   };
 

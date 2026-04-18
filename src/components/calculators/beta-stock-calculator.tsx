@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BetaStockCalculator() {
   const [stockReturn, setStockReturn] = useState("");
@@ -45,10 +46,10 @@ export function BetaStockCalculator() {
         interpretation = "Very high beta - highly volatile";
       }
       
-      setResult({
-        beta,
-        interpretation,
-      });
+      setResult(sanitizeResult({
+              beta,
+              interpretation,
+            }));
     } else {
       setResult(null);
     }

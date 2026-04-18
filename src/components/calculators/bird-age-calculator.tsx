@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BirdAgeCalculator() {
   const [humanYears, setHumanYears] = useState("");
@@ -48,7 +49,7 @@ export function BirdAgeCalculator() {
     }
 
     const birdYears = years * multiplier;
-    setResult(birdYears);
+    setResult(sanitizeResult(birdYears));
   };
 
   return (

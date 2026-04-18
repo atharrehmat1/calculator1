@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ThirtySixtyNinetyTriangleCalculator() {
   const [shortSide, setShortSide] = useState("");
@@ -31,11 +32,11 @@ export function ThirtySixtyNinetyTriangleCalculator() {
       const long = s * Math.sqrt(3);
       const hypotenuse = 2 * s;
       
-      setResult({
-        short: s,
-        long,
-        hypotenuse,
-      });
+      setResult(sanitizeResult({
+                    short: s,
+                    long,
+                    hypotenuse,
+                  }));
     } else {
       setResult(null);
     }

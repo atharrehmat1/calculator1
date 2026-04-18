@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BakersPercentageCalculator() {
   const [flourWeight, setFlourWeight] = useState("");
@@ -36,12 +37,12 @@ export function BakersPercentageCalculator() {
       const yeastWeight = flour * (yeast / 100);
       const totalWeight = flour + waterWeight + saltWeight + yeastWeight;
       
-      setResult({
-        water: waterWeight,
-        salt: saltWeight,
-        yeast: yeastWeight,
-        totalWeight,
-      });
+      setResult(sanitizeResult({
+              water: waterWeight,
+              salt: saltWeight,
+              yeast: yeastWeight,
+              totalWeight,
+            }));
     } else {
       setResult(null);
     }

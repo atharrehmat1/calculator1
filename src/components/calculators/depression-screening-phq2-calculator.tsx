@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function DepressionScreeningPHQ2Calculator() {
   const [question1, setQuestion1] = useState("0");
@@ -39,10 +40,10 @@ export function DepressionScreeningPHQ2Calculator() {
       interpretation = "Severe depression - recommend full evaluation";
     }
     
-    setResult({
-      score,
-      interpretation,
-    });
+    setResult(sanitizeResult({
+          score,
+          interpretation,
+        }));
   };
 
   return (

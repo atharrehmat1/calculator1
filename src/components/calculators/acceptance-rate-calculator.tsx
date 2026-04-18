@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AcceptanceRateCalculator() {
   const [accepted, setAccepted] = useState("");
@@ -28,10 +29,10 @@ export function AcceptanceRateCalculator() {
       const rate = (acc / tot) * 100;
       const rejected = tot - acc;
       
-      setResult({
-        rate: rate,
-        rejected: rejected,
-      });
+      setResult(sanitizeResult({
+              rate: rate,
+              rejected: rejected,
+            }));
     } else {
       setResult(null);
     }

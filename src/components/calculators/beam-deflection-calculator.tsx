@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const E_STEEL = 29000000; // Modulus of elasticity for steel (psi)
 const E_WOOD = 1600000; // Modulus of elasticity for wood (psi)
@@ -39,7 +40,7 @@ export function BeamDeflectionCalculator() {
       // Simple beam deflection: δ = (P × L³) / (48 × E × I)
       // For simply supported beam with point load at center
       const deflection = (P * Math.pow(L * 12, 3)) / (48 * E * I); // Convert feet to inches
-      setResult(deflection);
+      setResult(sanitizeResult(deflection));
     } else {
       setResult(null);
     }

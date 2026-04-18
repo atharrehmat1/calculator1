@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function FinancialCalculator() {
   const [principal, setPrincipal] = useState("");
@@ -29,11 +30,11 @@ export function FinancialCalculator() {
       const total = monthly * n;
       const interest = total - p;
 
-      setResult({
-        monthly: monthly,
-        total: total,
-        interest: interest,
-      });
+      setResult(sanitizeResult({
+              monthly: monthly,
+              total: total,
+              interest: interest,
+            }));
     }
   };
 

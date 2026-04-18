@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AudiobookSpeedCalculator() {
   const [bookLength, setBookLength] = useState("");
@@ -28,10 +29,10 @@ export function AudiobookSpeedCalculator() {
       const actualTime = length / speed;
       const timeSaved = length - actualTime;
       
-      setResult({
-        actualTime: actualTime,
-        timeSaved: timeSaved,
-      });
+      setResult(sanitizeResult({
+              actualTime: actualTime,
+              timeSaved: timeSaved,
+            }));
     } else {
       setResult(null);
     }

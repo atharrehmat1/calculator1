@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const ACRES_PER_SQ_FT = 1 / 43560;
 const ACRES_PER_SQ_METER = 1 / 4046.86;
@@ -54,12 +55,12 @@ export function AcreageCalculator() {
           break;
       }
       
-      setResult({
-        acres: acres,
-        hectares: acres * ACRES_PER_HECTARE,
-        squareFeet: acres / ACRES_PER_SQ_FT,
-        squareMeters: acres / ACRES_PER_SQ_METER,
-      });
+      setResult(sanitizeResult({
+              acres: acres,
+              hectares: acres * ACRES_PER_HECTARE,
+              squareFeet: acres / ACRES_PER_SQ_FT,
+              squareMeters: acres / ACRES_PER_SQ_METER,
+            }));
     } else {
       setResult(null);
     }

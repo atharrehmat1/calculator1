@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function CoordinatesConverter() {
   const [latitude, setLatitude] = useState("");
@@ -47,10 +48,10 @@ export function CoordinatesConverter() {
     if (!isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
       const decimal = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
       const dms = `${decimalToDMS(lat, true)}, ${decimalToDMS(lon, false)}`;
-      setResult({
-        decimal: decimal,
-        dms: dms,
-      });
+      setResult(sanitizeResult({
+              decimal: decimal,
+              dms: dms,
+            }));
     } else {
       setResult(null);
     }

@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function UnitConverter() {
   const [value, setValue] = useState("");
@@ -41,7 +42,7 @@ export function UnitConverter() {
     if (!isNaN(numValue)) {
       const baseValue = numValue / conversions[fromUnit];
       const convertedValue = baseValue * conversions[toUnit];
-      setResult(convertedValue);
+      setResult(sanitizeResult(convertedValue));
     }
   };
 
