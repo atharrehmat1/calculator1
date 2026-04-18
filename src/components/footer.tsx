@@ -10,8 +10,8 @@ export function Footer() {
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <Logo className="h-6 w-6" />
-              <span className="text-lg font-bold font-headline">Calculator1.org</span>
+              <Logo className="" />
+              {/* <span className="text-lg font-bold font-headline">Calculator1.org</span> */}
             </div>
             <p className="text-sm text-muted-foreground">
               Over 3,700 free calculators in one place.
@@ -35,14 +35,14 @@ export function Footer() {
               <Link href="#" className="text-muted-foreground hover:text-foreground">Privacy Policy</Link>
             </nav>
           </div>
-           <div>
-             <h4 className="font-semibold mb-4 font-headline">Follow Us</h4>
-             <div className="flex items-center gap-4">
-               <Link href="#" className="text-muted-foreground hover:text-primary"><Twitter className="h-5 w-5" /></Link>
-               <Link href="#" className="text-muted-foreground hover:text-primary"><Facebook className="h-5 w-5" /></Link>
-               <Link href="#" className="text-muted-foreground hover:text-primary"><Instagram className="h-5 w-5" /></Link>
-             </div>
-           </div>
+          <div>
+            <h4 className="font-semibold mb-4 font-headline">Follow Us</h4>
+            <div className="flex items-center gap-4">
+              <Link href="#" className="text-muted-foreground hover:text-primary"><Twitter className="h-5 w-5" /></Link>
+              <Link href="#" className="text-muted-foreground hover:text-primary"><Facebook className="h-5 w-5" /></Link>
+              <Link href="#" className="text-muted-foreground hover:text-primary"><Instagram className="h-5 w-5" /></Link>
+            </div>
+          </div>
         </div>
         <div className="mt-8 border-t pt-6 text-center text-xs text-muted-foreground">
           © {new Date().getFullYear()} Calculator1.org. All Rights Reserved.

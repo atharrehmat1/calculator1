@@ -10,8 +10,8 @@ export function Logo({ className }: { className?: string }) {
 
         className="dark:hidden object-contain"
         priority
-        width={50}
-        height={50}
+        width={230}
+        height={80}
       />
       <Image
         src="/icon-dark.png"
@@ -19,8 +19,8 @@ export function Logo({ className }: { className?: string }) {
 
         className="hidden dark:block object-contain"
         priority
-        width={50}
-        height={50}
+        width={230}
+        height={80}
       />
     </div>
   );

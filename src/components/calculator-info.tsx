@@ -46,6 +46,7 @@ interface Comment {
   updatedAt: string;
   userName: string;
   isAuthenticated?: boolean;
+  rating?: number | null;
 }
 
 export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
@@ -66,6 +67,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(true);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [visibleCommentsCount, setVisibleCommentsCount] = useState(10);
 
   // Fetch related calculators from the same subcategory
   useEffect(() => {
@@ -175,7 +177,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
     try {
       const data = await api.calculatorInteractions.toggleLike(calculator.id);
       setIsLiked(data.liked);
-      
+
       // Refresh like count
       const likesData = await api.calculatorInteractions.getLikes(calculator.id);
       setLikeCount(likesData.likeCount);
@@ -220,15 +222,15 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
       await api.calculatorInteractions.submitRating(calculator.id, star);
       setRating(star);
       setUserRating(star);
-      
-      // Refresh rating stats
+
+      // Refresh rating stats (will only show approved ratings)
       const data = await api.calculatorInteractions.getRatings(calculator.id);
       setAverageRating(data.averageRating);
       setTotalRatings(data.totalRatings);
 
       toast({
         title: "Rating submitted!",
-        description: "Thank you for your feedback.",
+        description: "Your rating has been received and is pending approval.",
       });
     } catch (error: any) {
       if (error.message && error.message.includes('Authentication required')) {
@@ -332,12 +334,13 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
     try {
       setSubmittingComment(true);
       const newComment = await api.calculatorInteractions.submitComment(calculator.id, comment);
-      setComments([newComment, ...comments]);
+      // We don't add it to the list immediately because it needs approval
+      // setComments([newComment, ...comments]); 
       setComment("");
-      
+
       toast({
         title: "Comment submitted!",
-        description: "Thank you for your feedback.",
+        description: "Your comment is pending approval and will be visible soon.",
       });
     } catch (error: any) {
       if (error.message && error.message.includes('Authentication required')) {
@@ -386,14 +389,14 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
       <Card className="w-full">
         <CardContent className="p-6">
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="mb-6 grid w-full grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-2 h-auto p-1">
+            <TabsList className="mb-6 grid w-full grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-2 h-auto p-1">
               <TabsTrigger value="about" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
-                About
+                Content
               </TabsTrigger>
-              <TabsTrigger value="how-to-use" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
+              {/* <TabsTrigger value="how-to-use" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
                 <span className="hidden sm:inline">How to use</span>
                 <span className="sm:hidden">Use</span>
-              </TabsTrigger>
+              </TabsTrigger> */}
               <TabsTrigger value="reviews" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
                 <span className="hidden sm:inline">Reviews & Comments</span>
                 <span className="sm:hidden">Reviews</span>
@@ -409,11 +412,11 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
                 <span className="hidden sm:inline">Share</span>
               </button>
             </TabsList>
-            
+
             <TabsContent value="about" className="mt-0">
               <RichTextRenderer content={calculator?.description || null} />
             </TabsContent>
-            
+
             <TabsContent value="reviews" className="mt-0">
               <div className="space-y-6">
                 {/* Rating Section */}
@@ -424,9 +427,8 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
                           key={star}
-                          className={`h-6 w-6 cursor-pointer transition-colors ${
-                            rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
-                          }`}
+                          className={`h-6 w-6 cursor-pointer transition-colors ${rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+                            }`}
                           onClick={() => handleRatingClick(star)}
                         />
                       ))}
@@ -434,7 +436,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
                         <span className="text-sm text-muted-foreground ml-2">Loading...</span>
                       ) : (
                         <span className="text-sm text-muted-foreground ml-2">
-                          {averageRating > 0 ? `${averageRating.toFixed(1)}` : 'No ratings yet'} 
+                          {averageRating > 0 ? `${averageRating.toFixed(1)}` : 'No ratings yet'}
                           {totalRatings > 0 && ` (${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'})`}
                         </span>
                       )}
@@ -444,13 +446,13 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
                   {/* Comment Input */}
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Leave a comment</p>
-                    <Textarea 
-                      placeholder="Share your thoughts about this calculator..." 
+                    <Textarea
+                      placeholder="Share your thoughts about this calculator..."
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       rows={4}
                     />
-                    <Button 
+                    <Button
                       onClick={handleSubmitComment}
                       disabled={!comment.trim() || submittingComment}
                     >
@@ -473,22 +475,62 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
                     </div>
                   ) : comments.length > 0 ? (
                     <div className="space-y-4">
-                      {comments.map((commentItem) => (
-                        <Card key={commentItem.id}>
+                      {comments.slice(0, visibleCommentsCount).map((commentItem) => (
+                        <Card key={commentItem.id} className="border-none bg-muted/30">
                           <CardContent className="p-4">
                             <div className="flex items-start justify-between mb-2">
-                              <span className="text-xs text-muted-foreground">
-                                <span className={commentItem.isAuthenticated ? "font-medium text-foreground" : ""}>
-                                  {commentItem.userName}
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <span className={cn(
+                                    "text-sm font-bold text-foreground",
+                                    commentItem.isAuthenticated ? "text-primary" : ""
+                                  )}>
+                                    {commentItem.userName}
+                                  </span>
+                                  {commentItem.rating && (
+                                    <div className="flex items-center gap-0.5 ml-1">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star
+                                          key={i}
+                                          className={cn(
+                                            "h-3 w-3",
+                                            i < (commentItem.rating || 0)
+                                              ? "fill-yellow-400 text-yellow-400"
+                                              : "text-muted-foreground/30"
+                                          )}
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-muted-foreground">
+                                  {new Date(commentItem.createdAt).toLocaleDateString(undefined, {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  })}
                                 </span>
-                                {' • '}
-                                {new Date(commentItem.createdAt).toLocaleDateString()}
-                              </span>
+                              </div>
                             </div>
-                            <p className="text-sm whitespace-pre-wrap">{commentItem.comment}</p>
+                            <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                              {commentItem.comment}
+                            </p>
                           </CardContent>
                         </Card>
                       ))}
+
+                      {comments.length > visibleCommentsCount && (
+                        <div className="flex justify-center pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setVisibleCommentsCount(prev => prev + 10)}
+                            className="bg-background hover:bg-muted"
+                          >
+                            Show More Comments
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">No comments yet. Be the first to comment!</p>
@@ -496,7 +538,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
                 </div>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="how-to-use" className="mt-0">
               {calculator?.how_to_use ? (
                 <RichTextRenderer content={calculator.how_to_use} />

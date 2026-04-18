@@ -47,6 +47,12 @@ export async function generateMetadata(
   const keywords = calculator.meta_keywords || `${calculator.name}, calculator, free online calculator`;
   const canonicalUrl = `${SITE_URL}/calculators/${categorySlug}/${calculatorSlug}`;
 
+  const featuredImage = calculator.featured_image
+    ? (calculator.featured_image.startsWith('http')
+      ? calculator.featured_image
+      : `${API_BASE_URL.replace('/api', '')}${calculator.featured_image}`)
+    : null;
+
   return {
     title,
     description,
@@ -60,11 +66,13 @@ export async function generateMetadata(
       type: 'website',
       url: canonicalUrl,
       siteName: 'Calculator1.org',
+      images: featuredImage ? [{ url: featuredImage }] : undefined,
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: featuredImage ? [featuredImage] : undefined,
     },
   };
 }

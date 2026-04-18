@@ -129,9 +129,9 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center justify-center gap-2">
           <Logo />
-          <span className="text-[1.5rem] font-bold  ">
+          {/* <span className="text-[1.5rem] font-bold  ">
             Calculator<span className="text-[#16a34a]">1.org</span>
-          </span>
+          </span> */}
         </Link>
 
         <div className="flex-1 flex justify-center px-4 lg:px-16">
