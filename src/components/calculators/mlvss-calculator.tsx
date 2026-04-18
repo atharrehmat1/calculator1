@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function MLVSSCalculator() {
   const [mlss, setMlss] = useState("");
@@ -24,7 +25,7 @@ export function MLVSSCalculator() {
     if (!isNaN(mlssValue) && !isNaN(vf) && mlssValue > 0 && vf >= 0 && vf <= 1) {
       // MLVSS = MLSS × Volatile Fraction
       const mlvss = mlssValue * vf;
-      setResult(mlvss);
+      setResult(sanitizeResult(mlvss));
     }
   };
 

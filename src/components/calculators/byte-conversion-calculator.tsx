@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const BYTE_UNITS: Record<string, number> = {
   "bytes": 1,
@@ -42,7 +43,7 @@ export function ByteConversionCalculator() {
       const bytes = val * BYTE_UNITS[fromUnit];
       // Convert to target unit
       const converted = bytes / BYTE_UNITS[toUnit];
-      setResult(converted);
+      setResult(sanitizeResult(converted));
     } else {
       setResult(null);
     }

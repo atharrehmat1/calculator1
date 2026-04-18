@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function CurrencyConverter() {
   const [amount, setAmount] = useState("");
@@ -42,7 +43,7 @@ export function CurrencyConverter() {
     if (!isNaN(numAmount)) {
       const usdAmount = numAmount / exchangeRates[fromCurrency];
       const convertedAmount = usdAmount * exchangeRates[toCurrency];
-      setResult(convertedAmount);
+      setResult(sanitizeResult(convertedAmount));
     }
   };
 

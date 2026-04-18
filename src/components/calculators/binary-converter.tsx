@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BinaryConverter() {
   const [value, setValue] = useState("");
@@ -69,7 +70,7 @@ export function BinaryConverter() {
       const num = parseNumber(value, fromBaseNum);
       if (!isNaN(num)) {
         const converted = formatNumber(num, toBaseNum);
-        setResult(converted);
+        setResult(sanitizeResult(converted));
       } else {
         setResult(null);
       }

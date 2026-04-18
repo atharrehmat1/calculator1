@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ACTonnageCalculator() {
   const [length, setLength] = useState("");
@@ -29,7 +30,7 @@ export function ACTonnageCalculator() {
       // Simplified: 1 ton per 400 sq ft of floor area
       const area = l * w;
       const tonnage = area / 400;
-      setResult(tonnage);
+      setResult(sanitizeResult(tonnage));
     } else {
       setResult(null);
     }

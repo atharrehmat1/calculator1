@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BenadrylDosageCalculatorDogs() {
   const [weight, setWeight] = useState("");
@@ -41,11 +42,11 @@ export function BenadrylDosageCalculatorDogs() {
     const tablets = dosageMg / 25; // 25mg per tablet
     const ml = dosageMg / 12.5; // Liquid Benadryl is typically 12.5mg per 5ml, so 2.5mg per ml
 
-    setResult({
-      dosage: dosageMg,
-      tablets: tablets,
-      ml: ml,
-    });
+    setResult(sanitizeResult({
+          dosage: dosageMg,
+          tablets: tablets,
+          ml: ml,
+        }));
   };
 
   return (

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ACFTCalculator() {
   const [deadlift, setDeadlift] = useState("");
@@ -48,10 +49,10 @@ export function ACFTCalculator() {
         grade = "Needs Improvement";
       }
       
-      setResult({
-        totalScore,
-        grade,
-      });
+      setResult(sanitizeResult({
+              totalScore,
+              grade,
+            }));
     } else {
       setResult(null);
     }

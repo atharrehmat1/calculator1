@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ThreeDPrinterBuyVsOutsourceCalculator() {
   const [monthlyVolume, setMonthlyVolume] = useState("");
@@ -40,12 +41,12 @@ export function ThreeDPrinterBuyVsOutsourceCalculator() {
       const savings = outsourceTotal - buyTotal;
       const recommendation = savings > 0 ? "Buy" : "Outsource";
       
-      setResult({
-        buyTotal,
-        outsourceTotal,
-        savings: Math.abs(savings),
-        recommendation,
-      });
+      setResult(sanitizeResult({
+              buyTotal,
+              outsourceTotal,
+              savings: Math.abs(savings),
+              recommendation,
+            }));
     } else {
       setResult(null);
     }

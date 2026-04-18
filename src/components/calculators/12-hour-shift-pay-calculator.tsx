@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function TwelveHourShiftPayCalculator() {
   const [hourlyRate, setHourlyRate] = useState("");
@@ -37,12 +38,12 @@ export function TwelveHourShiftPayCalculator() {
       const totalPay = regularPay + overtimePay;
       const weeklyPay = totalPay * shifts;
       
-      setResult({
-        regularPay,
-        overtimePay,
-        totalPay,
-        weeklyPay,
-      });
+      setResult(sanitizeResult({
+                    regularPay,
+                    overtimePay,
+                    totalPay,
+                    weeklyPay,
+                  }));
     } else {
       setResult(null);
     }

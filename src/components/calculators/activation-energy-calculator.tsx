@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const R = 8.314; // Gas constant in J/(mol·K)
 
@@ -33,7 +34,7 @@ export function ActivationEnergyCalculator() {
       const T1 = temp1 + 273.15; // Convert to Kelvin
       const T2 = temp2 + 273.15;
       const Ea = (R * Math.log(rate2 / rate1)) / ((1 / T1) - (1 / T2));
-      setResult(Ea);
+      setResult(sanitizeResult(Ea));
     } else {
       setResult(null);
     }

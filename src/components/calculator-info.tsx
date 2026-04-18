@@ -386,14 +386,11 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
       <Card className="w-full">
         <CardContent className="p-6">
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="mb-6 grid w-full grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-2 h-auto p-1">
+            <TabsList className="mb-6 grid w-full grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-2 h-auto p-1">
               <TabsTrigger value="about" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
                 About
               </TabsTrigger>
-              <TabsTrigger value="how-to-use" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
-                <span className="hidden sm:inline">How to use</span>
-                <span className="sm:hidden">Use</span>
-              </TabsTrigger>
+
               <TabsTrigger value="reviews" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
                 <span className="hidden sm:inline">Reviews & Comments</span>
                 <span className="sm:hidden">Reviews</span>
@@ -497,15 +494,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
               </div>
             </TabsContent>
             
-            <TabsContent value="how-to-use" className="mt-0">
-              {calculator?.how_to_use ? (
-                <RichTextRenderer content={calculator.how_to_use} />
-              ) : (
-                <div className="text-sm text-muted-foreground">
-                  No usage instructions have been added for this calculator yet.
-                </div>
-              )}
-            </TabsContent>
+
           </Tabs>
         </CardContent>
       </Card>

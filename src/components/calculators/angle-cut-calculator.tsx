@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AngleCutCalculator() {
   const [angle, setAngle] = useState("");
@@ -29,10 +30,10 @@ export function AngleCutCalculator() {
       // For a miter cut, calculate the cut dimensions
       const opposite = w * Math.sin(angleRad);
       const adjacent = w * Math.cos(angleRad);
-      setResult({
-        opposite: opposite,
-        adjacent: adjacent,
-      });
+      setResult(sanitizeResult({
+              opposite: opposite,
+              adjacent: adjacent,
+            }));
     } else {
       setResult(null);
     }

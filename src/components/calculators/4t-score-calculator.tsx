@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function FourTScoreCalculator() {
   const [thrombocytopenia, setThrombocytopenia] = useState("0");
@@ -33,10 +34,10 @@ export function FourTScoreCalculator() {
       probability = "High probability (64-100%)";
     }
     
-    setResult({
-      score,
-      probability,
-    });
+    setResult(sanitizeResult({
+          score,
+          probability,
+        }));
   };
 
   return (

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function CementCalculator() {
   const [length, setLength] = useState("");
@@ -31,10 +32,10 @@ export function CementCalculator() {
       const volumeCubicYards = volumeCubicFeet / 27;
       // Standard: 1 cubic yard requires ~6 bags of cement (80 lb bags)
       const bags = volumeCubicYards * 6;
-      setResult({
-        volume: volumeCubicYards,
-        bags: bags,
-      });
+      setResult(sanitizeResult({
+              volume: volumeCubicYards,
+              bags: bags,
+            }));
     } else {
       setResult(null);
     }

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function TwentyTwentyVisionCalculator() {
   const [distance, setDistance] = useState("");
@@ -43,10 +44,10 @@ export function TwentyTwentyVisionCalculator() {
         interpretation = "Severe vision impairment - consult eye doctor";
       }
       
-      setResult({
-        vision,
-        interpretation,
-      });
+      setResult(sanitizeResult({
+                    vision,
+                    interpretation,
+                  }));
     } else {
       setResult(null);
     }

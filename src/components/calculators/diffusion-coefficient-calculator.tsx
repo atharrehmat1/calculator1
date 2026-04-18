@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const kB = 1.380649e-23; // Boltzmann constant in J/K
 const PI = Math.PI;
@@ -29,7 +30,7 @@ export function DiffusionCoefficientCalculator() {
     if (T > 0 && eta > 0 && r > 0) {
       // Stokes-Einstein equation: D = kT / (6πηr)
       const D = (kB * T) / (6 * PI * eta * r);
-      setResult(D * 1e10); // Convert to cm²/s (multiply by 1e10)
+      setResult(sanitizeResult(D * 1e10)); // Convert to cm²/s (multiply by 1e10)
     } else {
       setResult(null);
     }

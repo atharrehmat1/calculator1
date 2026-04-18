@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Delete, Pi, SquareRadical } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ScientificCalculator() {
   const [expression, setExpression] = useState("");

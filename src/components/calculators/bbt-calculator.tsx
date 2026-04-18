@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BBTCalculator() {
   const [temperature, setTemperature] = useState("");
@@ -41,10 +42,10 @@ export function BBTCalculator() {
         ovulation = "Ovulation may be occurring";
       }
       
-      setResult({
-        phase,
-        ovulation,
-      });
+      setResult(sanitizeResult({
+              phase,
+              ovulation,
+            }));
     } else {
       setResult(null);
     }

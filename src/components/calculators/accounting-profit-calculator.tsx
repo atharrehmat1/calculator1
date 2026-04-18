@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AccountingProfitCalculator() {
   const [revenue, setRevenue] = useState("");
@@ -28,10 +29,10 @@ export function AccountingProfitCalculator() {
       const profit = rev - costs;
       const profitMargin = rev > 0 ? (profit / rev) * 100 : 0;
       
-      setResult({
-        profit,
-        profitMargin,
-      });
+      setResult(sanitizeResult({
+              profit,
+              profitMargin,
+            }));
     } else {
       setResult(null);
     }

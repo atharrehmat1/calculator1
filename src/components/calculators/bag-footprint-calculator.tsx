@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 // Carbon footprint in kg CO2 per bag (approximate values)
 const BAG_FOOTPRINTS: Record<string, number> = {
@@ -45,10 +46,10 @@ export function BagFootprintCalculator() {
       const totalFootprint = qty * footprintPerBag;
       const perUse = totalFootprint / (qty * useCount);
       
-      setResult({
-        totalFootprint: totalFootprint,
-        perUse: perUse,
-      });
+      setResult(sanitizeResult({
+              totalFootprint: totalFootprint,
+              perUse: perUse,
+            }));
     } else {
       setResult(null);
     }

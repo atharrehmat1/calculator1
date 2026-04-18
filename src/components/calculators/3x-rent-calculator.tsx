@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ThreeXRentCalculator() {
   const [monthlyRent, setMonthlyRent] = useState("");
@@ -26,10 +27,10 @@ export function ThreeXRentCalculator() {
       const requiredIncome = rent * 3; // 3x rent rule
       const requiredHourlyRate = requiredIncome / (40 * 4.33); // Assuming 40 hours/week, 4.33 weeks/month
       
-      setResult({
-        requiredIncome,
-        requiredHourlyRate,
-      });
+      setResult(sanitizeResult({
+              requiredIncome,
+              requiredHourlyRate,
+            }));
     } else {
       setResult(null);
     }

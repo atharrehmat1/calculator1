@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AverageRateOfChangeCalculator() {
   const [x1, setX1] = useState("");
@@ -28,7 +29,7 @@ export function AverageRateOfChangeCalculator() {
     if (!isNaN(x1Val) && !isNaN(y1Val) && !isNaN(x2Val) && !isNaN(y2Val) && x1Val !== x2Val) {
       // Average rate of change = (y2 - y1) / (x2 - x1)
       const rate = (y2Val - y1Val) / (x2Val - x1Val);
-      setResult(rate);
+      setResult(sanitizeResult(rate));
     } else {
       setResult(null);
     }

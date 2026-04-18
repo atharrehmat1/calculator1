@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AntilogCalculator() {
   const [value, setValue] = useState("");
@@ -31,7 +32,7 @@ export function AntilogCalculator() {
     if (!isNaN(val) && !isNaN(baseVal) && baseVal > 0 && baseVal !== 1) {
       // Antilog: antilog_b(x) = b^x
       const antilog = Math.pow(baseVal, val);
-      setResult(antilog);
+      setResult(sanitizeResult(antilog));
     } else {
       setResult(null);
     }

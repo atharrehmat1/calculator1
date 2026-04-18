@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function CholesterolRatioCalculator() {
   const [totalCholesterol, setTotalCholesterol] = useState("");
@@ -36,10 +37,10 @@ export function CholesterolRatioCalculator() {
         interpretation = "High risk - consult doctor";
       }
       
-      setResult({
-        ratio,
-        interpretation,
-      });
+      setResult(sanitizeResult({
+              ratio,
+              interpretation,
+            }));
     } else {
       setResult(null);
     }

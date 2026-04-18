@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function CalibrationCurveCalculator() {
   const [slope, setSlope] = useState("");
@@ -28,7 +29,7 @@ export function CalibrationCurveCalculator() {
       // Solving for x (concentration): x = (y - b) / m
       if (m !== 0) {
         const concentration = (y - b) / m;
-        setResult(concentration);
+        setResult(sanitizeResult(concentration));
       } else {
         setResult(null);
       }

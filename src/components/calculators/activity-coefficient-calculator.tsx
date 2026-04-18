@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ActivityCoefficientCalculator() {
   const [ionicStrength, setIonicStrength] = useState("");
@@ -27,7 +28,7 @@ export function ActivityCoefficientCalculator() {
       const A = 0.509;
       const logGamma = -A * z * z * Math.sqrt(I);
       const gamma = Math.pow(10, logGamma);
-      setResult(gamma);
+      setResult(sanitizeResult(gamma));
     } else {
       setResult(null);
     }

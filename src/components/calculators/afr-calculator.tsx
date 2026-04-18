@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AFRCalculator() {
   const [air, setAir] = useState("");
@@ -21,7 +22,7 @@ export function AFRCalculator() {
     const a = parseFloat(air);
     const f = parseFloat(fuel);
     if (a > 0 && f > 0) {
-      setResult(a / f);
+      setResult(sanitizeResult(a / f));
     }
   };
 

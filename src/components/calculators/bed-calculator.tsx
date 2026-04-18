@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BEDCalculator() {
   const [dose, setDose] = useState("");
@@ -41,10 +42,10 @@ export function BEDCalculator() {
         interpretation = "High biological effect";
       }
       
-      setResult({
-        bed,
-        interpretation,
-      });
+      setResult(sanitizeResult({
+              bed,
+              interpretation,
+            }));
     } else {
       setResult(null);
     }

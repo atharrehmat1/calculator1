@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const F = 96485; // Faraday constant in C/mol
 const R = 8.314; // Gas constant in J/(mol·K)
@@ -34,7 +35,7 @@ export function CellEMFCalculator() {
       // E° = E°cathode - E°anode
       const E0 = E0cat - E0an;
       const E = E0 - ((R * T) / (electrons * F)) * Math.log(reactionQuotient);
-      setResult(E);
+      setResult(sanitizeResult(E));
     } else {
       setResult(null);
     }

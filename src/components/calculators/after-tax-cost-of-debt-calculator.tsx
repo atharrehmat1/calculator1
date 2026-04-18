@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AfterTaxCostOfDebtCalculator() {
   const [interestRate, setInterestRate] = useState("");
@@ -29,10 +30,10 @@ export function AfterTaxCostOfDebtCalculator() {
       const afterTaxCost = interest * (1 - tax / 100);
       const taxSavings = interest - afterTaxCost;
       
-      setResult({
-        afterTaxCost,
-        taxSavings,
-      });
+      setResult(sanitizeResult({
+              afterTaxCost,
+              taxSavings,
+            }));
     } else {
       setResult(null);
     }

@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BMICalculator() {
   const [weight, setWeight] = useState("");
@@ -53,10 +54,10 @@ export function BMICalculator() {
         category = "Obese";
       }
       
-      setResult({
-        bmi,
-        category,
-      });
+      setResult(sanitizeResult({
+              bmi,
+              category,
+            }));
     } else {
       setResult(null);
     }

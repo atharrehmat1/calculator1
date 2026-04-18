@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function GeometryCalculator() {
   const [shape, setShape] = useState("circle");
@@ -30,19 +31,19 @@ export function GeometryCalculator() {
     if (shape === "circle") {
       const r = parseFloat(radius);
       if (r > 0) {
-        setResult({
-          area: Math.PI * r * r,
-          perimeter: 2 * Math.PI * r,
-        });
+        setResult(sanitizeResult({
+                  area: Math.PI * r * r,
+                  perimeter: 2 * Math.PI * r,
+                }));
       }
     } else if (shape === "rectangle") {
       const l = parseFloat(length);
       const w = parseFloat(width);
       if (l > 0 && w > 0) {
-        setResult({
-          area: l * w,
-          perimeter: 2 * (l + w),
-        });
+        setResult(sanitizeResult({
+                  area: l * w,
+                  perimeter: 2 * (l + w),
+                }));
       }
     }
   };

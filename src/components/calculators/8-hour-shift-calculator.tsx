@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function EightHourShiftCalculator() {
   const [startTime, setStartTime] = useState("");
@@ -48,11 +49,11 @@ export function EightHourShiftCalculator() {
       const endMinutes = startMinutes + workMinutes + breakMins;
       const totalMinutes = workMinutes + breakMins;
       
-      setResult({
-        endTime: formatTime(endMinutes),
-        totalHours: totalMinutes / 60,
-        workHours: workMinutes / 60,
-      });
+      setResult(sanitizeResult({
+              endTime: formatTime(endMinutes),
+              totalHours: totalMinutes / 60,
+              workHours: workMinutes / 60,
+            }));
     } else {
       setResult(null);
     }

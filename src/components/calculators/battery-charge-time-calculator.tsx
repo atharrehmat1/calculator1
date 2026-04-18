@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BatteryChargeTimeCalculator() {
   const [batteryCapacity, setBatteryCapacity] = useState("");
@@ -35,10 +36,10 @@ export function BatteryChargeTimeCalculator() {
       const chargeTimeHours = remainingCapacity / actualOutput;
       const chargeTimeMinutes = chargeTimeHours * 60;
       
-      setResult({
-        chargeTime: chargeTimeHours,
-        chargeTimeMinutes: chargeTimeMinutes,
-      });
+      setResult(sanitizeResult({
+              chargeTime: chargeTimeHours,
+              chargeTimeMinutes: chargeTimeMinutes,
+            }));
     } else {
       setResult(null);
     }

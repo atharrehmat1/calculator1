@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AddictionCalculator() {
   const [substance, setSubstance] = useState("");
@@ -45,10 +46,10 @@ export function AddictionCalculator() {
         recommendation = "Strongly recommend professional help and support";
       }
       
-      setResult({
-        risk,
-        recommendation,
-      });
+      setResult(sanitizeResult({
+              risk,
+              recommendation,
+            }));
     } else {
       setResult(null);
     }

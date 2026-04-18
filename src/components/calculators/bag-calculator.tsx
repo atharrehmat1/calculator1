@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BagCalculator() {
   const [bagType, setBagType] = useState("tote");
@@ -42,10 +43,10 @@ export function BagCalculator() {
       const fabricSqInches = (2 * w * h) + (w * (d || 1)) + (w * 2); // Add handle allowance
       const fabricSqYards = fabricSqInches / 1296; // Convert to square yards
       
-      setResult({
-        volume: volume,
-        fabric: fabricSqYards,
-      });
+      setResult(sanitizeResult({
+              volume: volume,
+              fabric: fabricSqYards,
+            }));
     } else {
       setResult(null);
     }

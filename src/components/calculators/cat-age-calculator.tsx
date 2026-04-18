@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function CatAgeCalculator() {
   const [humanYears, setHumanYears] = useState("");
@@ -30,7 +31,7 @@ export function CatAgeCalculator() {
       catYears = 24 + (years - 2) * 4;
     }
 
-    setResult(catYears);
+    setResult(sanitizeResult(catYears));
   };
 
   return (

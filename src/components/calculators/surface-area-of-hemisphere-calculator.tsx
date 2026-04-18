@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function SurfaceAreaOfHemisphereCalculator() {
   const [radius, setRadius] = useState("");
@@ -32,11 +33,11 @@ export function SurfaceAreaOfHemisphereCalculator() {
       const base = Math.PI * r * r;
       const total = curved + base;
       
-      setResult({
-        curved,
-        base,
-        total,
-      });
+      setResult(sanitizeResult({
+              curved,
+              base,
+              total,
+            }));
     } else {
       setResult(null);
     }

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ThanksgivingCalculator() {
   const [guests, setGuests] = useState("");
@@ -35,14 +36,14 @@ export function ThanksgivingCalculator() {
       const cranberrySauce = numGuests * 0.25; // 0.25 cups per person
       const pie = Math.ceil(numGuests / 8); // 1 pie per 8 people
       
-      setResult({
-        turkey,
-        stuffing,
-        mashedPotatoes,
-        greenBeans,
-        cranberrySauce,
-        pie,
-      });
+      setResult(sanitizeResult({
+              turkey,
+              stuffing,
+              mashedPotatoes,
+              greenBeans,
+              cranberrySauce,
+              pie,
+            }));
     } else {
       setResult(null);
     }

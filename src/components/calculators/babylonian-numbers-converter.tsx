@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 function decimalToBabylonian(decimal: number): string {
   if (decimal === 0) return "∅";
@@ -54,13 +55,13 @@ export function BabylonianNumbersConverter() {
     if (direction === "toBabylonian") {
       const num = parseFloat(value);
       if (!isNaN(num) && num >= 0) {
-        setResult(decimalToBabylonian(num));
+        setResult(sanitizeResult(decimalToBabylonian(num)));
       } else {
         setResult(null);
       }
     } else {
       // From Babylonian to decimal (simplified)
-      setResult("Conversion from Babylonian numerals is complex and requires specialized parsing.");
+      setResult(sanitizeResult("Conversion from Babylonian numerals is complex and requires specialized parsing."));
     }
   };
 

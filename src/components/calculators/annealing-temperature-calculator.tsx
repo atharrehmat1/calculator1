@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AnnealingTemperatureCalculator() {
   const [gcContent, setGcContent] = useState("");
@@ -29,7 +30,7 @@ export function AnnealingTemperatureCalculator() {
       const tm = 64.9 + (41 * (gc - 16.4)) / length - 600 / length;
       // Adjust for salt concentration (simplified)
       const adjustedTm = tm + 0.41 * (salt - 50) / 50;
-      setResult(adjustedTm);
+      setResult(sanitizeResult(adjustedTm));
     }
   };
 

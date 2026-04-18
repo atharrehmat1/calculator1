@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function TenOneARMCalculator() {
   const [loanAmount, setLoanAmount] = useState("");
@@ -44,11 +45,11 @@ export function TenOneARMCalculator() {
       const remainingPrincipal = principal - (principal - balanceAfter10Years);
       const newPayment = remainingPrincipal * (adjusted * Math.pow(1 + adjusted, remainingMonths)) / (Math.pow(1 + adjusted, remainingMonths) - 1);
       
-      setResult({
-        initialPayment,
-        adjustedPayment: newPayment || adjustedPayment,
-        paymentIncrease: (newPayment || adjustedPayment) - initialPayment,
-      });
+      setResult(sanitizeResult({
+                    initialPayment,
+                    adjustedPayment: newPayment || adjustedPayment,
+                    paymentIncrease: (newPayment || adjustedPayment) - initialPayment,
+                  }));
     } else {
       setResult(null);
     }

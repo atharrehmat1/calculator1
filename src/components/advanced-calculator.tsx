@@ -627,7 +627,7 @@ export function AdvancedCalculator() {
                   return <div key={`empty-${index}`} className="col-span-1" />;
                 }
                 
-                const span = btn.span || 1;
+                const span = ('span' in btn) ? (btn as any).span : 1;
                 
                 return (
                   <button

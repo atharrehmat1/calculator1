@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b);
@@ -45,11 +46,11 @@ export function AddingFractionsCalculator() {
         den: denominator / g,
       };
       
-      setResult({
-        numerator,
-        denominator,
-        simplified,
-      });
+      setResult(sanitizeResult({
+              numerator,
+              denominator,
+              simplified,
+            }));
     } else {
       setResult(null);
     }

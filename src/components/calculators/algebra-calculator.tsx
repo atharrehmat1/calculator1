@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AlgebraCalculator() {
   const [equation, setEquation] = useState("");
@@ -27,12 +28,12 @@ export function AlgebraCalculator() {
         const bVal = op === "+" ? parseFloat(b) : -parseFloat(b);
         const cVal = parseFloat(c);
         const x = (cVal - bVal) / aVal;
-        setResult(`x = ${x}`);
+        setResult(sanitizeResult(`x = ${x}`));
       } else {
-        setResult("Please enter equation in format: ax + b = c");
+        setResult(sanitizeResult("Please enter equation in format: ax + b = c"));
       }
     } catch (error) {
-      setResult("Error: Invalid equation format");
+      setResult(sanitizeResult("Error: Invalid equation format"));
     }
   };
 

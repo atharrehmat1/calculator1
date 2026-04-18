@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const DEGREES_TO_RADIANS = Math.PI / 180;
 const RADIANS_TO_DEGREES = 180 / Math.PI;
@@ -63,7 +64,7 @@ export function AngleConversionCalculator() {
           break;
       }
       
-      setResult(converted);
+      setResult(sanitizeResult(converted));
     } else {
       setResult(null);
     }

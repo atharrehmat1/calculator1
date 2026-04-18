@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AbsoluteValueEquationCalculator() {
   const [a, setA] = useState("");
@@ -32,10 +33,10 @@ export function AbsoluteValueEquationCalculator() {
       const solution1 = (cVal - bVal) / aVal;
       const solution2 = (-cVal - bVal) / aVal;
       
-      setResult({
-        solution1: cVal >= 0 ? solution1 : null,
-        solution2: cVal >= 0 ? solution2 : null,
-      });
+      setResult(sanitizeResult({
+              solution1: cVal >= 0 ? solution1 : null,
+              solution2: cVal >= 0 ? solution2 : null,
+            }));
     } else {
       setResult(null);
     }
