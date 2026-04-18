@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AlvaradoScoreCalculator() {
   const [migration, setMigration] = useState("0");
@@ -47,10 +48,10 @@ export function AlvaradoScoreCalculator() {
       probability = "High probability - surgery recommended";
     }
     
-    setResult({
-      score,
-      probability,
-    });
+    setResult(sanitizeResult({
+          score,
+          probability,
+        }));
   };
 
   return (

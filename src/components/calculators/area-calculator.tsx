@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AreaCalculator() {
   const [shape, setShape] = useState("rectangle");
@@ -50,7 +51,7 @@ export function AreaCalculator() {
       }
     }
     
-    setResult(area > 0 ? area : null);
+    setResult(sanitizeResult(area > 0 ? area : null));
   };
 
   return (

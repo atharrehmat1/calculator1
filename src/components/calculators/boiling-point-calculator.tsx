@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const R = 8.314; // Gas constant in J/(mol·K)
 
@@ -31,7 +32,7 @@ export function BoilingPointCalculator() {
       // Clausius-Clapeyron equation: ln(P2/P1) = (ΔH/R) * (1/T1 - 1/T2)
       // Solving for T2: 1/T2 = 1/T1 - (R/ΔH) * ln(P2/P1)
       const T2 = 1 / ((1 / T1) - ((R / deltaH) * Math.log(P2 / P1)));
-      setResult(T2 - 273.15); // Convert back to Celsius
+      setResult(sanitizeResult(T2 - 273.15)); // Convert back to Celsius
     } else {
       setResult(null);
     }

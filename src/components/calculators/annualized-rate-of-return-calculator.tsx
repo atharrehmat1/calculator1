@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AnnualizedRateOfReturnCalculator() {
   const [initialValue, setInitialValue] = useState("");
@@ -33,11 +34,11 @@ export function AnnualizedRateOfReturnCalculator() {
       // Annualized Return = ((Final Value / Initial Value)^(1/Years)) - 1
       const annualizedReturn = (Math.pow(final / initial, 1 / y) - 1) * 100;
       
-      setResult({
-        annualizedReturn,
-        totalReturn,
-        totalReturnPercent,
-      });
+      setResult(sanitizeResult({
+              annualizedReturn,
+              totalReturn,
+              totalReturnPercent,
+            }));
     } else {
       setResult(null);
     }

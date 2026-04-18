@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BirdsmouthCutCalculator() {
   const [rafterWidth, setRafterWidth] = useState("");
@@ -29,10 +30,10 @@ export function BirdsmouthCutCalculator() {
       const plumbCut = width - seat;
       // Angle calculation: tan(angle) = plumb cut / seat cut
       const angle = Math.atan(plumbCut / seat) * (180 / Math.PI);
-      setResult({
-        plumbCut: plumbCut,
-        seatCutAngle: angle,
-      });
+      setResult(sanitizeResult({
+              plumbCut: plumbCut,
+              seatCutAngle: angle,
+            }));
     } else {
       setResult(null);
     }

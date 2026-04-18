@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function FourZeroOneKCalculator() {
   const [currentAge, setCurrentAge] = useState("");
@@ -49,11 +50,11 @@ export function FourZeroOneKCalculator() {
       const totalContributions = balance + (totalMonthly * months);
       const earnings = totalValue - totalContributions;
       
-      setResult({
-        totalContributions,
-        totalValue,
-        earnings,
-      });
+      setResult(sanitizeResult({
+              totalContributions,
+              totalValue,
+              earnings,
+            }));
     } else {
       setResult(null);
     }

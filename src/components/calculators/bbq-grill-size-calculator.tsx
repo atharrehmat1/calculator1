@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BBQGrillSizeCalculator() {
   const [guests, setGuests] = useState("");
@@ -40,11 +41,11 @@ export function BBQGrillSizeCalculator() {
         recommendation = "Extra large grill (30+ inches) or multiple grills";
       }
       
-      setResult({
-        grillSize,
-        recommendation,
-        cookingArea,
-      });
+      setResult(sanitizeResult({
+              grillSize,
+              recommendation,
+              cookingArea,
+            }));
     } else {
       setResult(null);
     }

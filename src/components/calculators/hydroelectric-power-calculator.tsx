@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const GRAVITY = 9.81; // m/s²
 const EFFICIENCY = 0.85; // Typical hydroelectric efficiency (85%)
@@ -35,10 +36,10 @@ export function HydroelectricPowerCalculator() {
       const powerMW = powerWatts / 1000000; // Convert to MW
       const energyMWh = powerMW * 24; // Energy per day
       
-      setResult({
-        power: powerMW,
-        energy: energyMWh,
-      });
+      setResult(sanitizeResult({
+              power: powerMW,
+              energy: energyMWh,
+            }));
     } else {
       setResult(null);
     }

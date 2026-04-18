@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AtalPensionYojanaCalculator() {
   const [age, setAge] = useState("");
@@ -40,12 +41,12 @@ export function AtalPensionYojanaCalculator() {
       // APY provides fixed pension based on contribution
       const monthlyPension = pension;
       
-      setResult({
-        totalContributions,
-        governmentCoContribution: govtContribution,
-        totalValue,
-        monthlyPension,
-      });
+      setResult(sanitizeResult({
+              totalContributions,
+              governmentCoContribution: govtContribution,
+              totalValue,
+              monthlyPension,
+            }));
     } else {
       setResult(null);
     }

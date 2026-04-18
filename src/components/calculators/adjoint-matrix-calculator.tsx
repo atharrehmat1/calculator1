@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AdjointMatrixCalculator() {
   const [matrix, setMatrix] = useState("");
@@ -25,10 +26,10 @@ export function AdjointMatrixCalculator() {
         // 2x2 matrix adjoint
         const [[a, b], [c, d]] = rows;
         const adjoint = [[d, -b], [-c, a]];
-        setResult(adjoint);
+        setResult(sanitizeResult(adjoint));
       } else if (rows.length === 3 && rows.every(row => row.length === 3)) {
         // 3x3 matrix adjoint (simplified - shows structure)
-        setResult(rows); // Placeholder - full adjoint calculation is complex
+        setResult(sanitizeResult(rows)); // Placeholder - full adjoint calculation is complex
       } else {
         setResult(null);
       }

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AngleBetweenTwoVectorsCalculator() {
   const [x1, setX1] = useState("");
@@ -41,10 +42,10 @@ export function AngleBetweenTwoVectorsCalculator() {
         const radians = Math.acos(Math.max(-1, Math.min(1, cosAngle)));
         const degrees = (radians * 180) / Math.PI;
         
-        setResult({
-          radians,
-          degrees,
-        });
+        setResult(sanitizeResult({
+                  radians,
+                  degrees,
+                }));
       } else {
         setResult(null);
       }

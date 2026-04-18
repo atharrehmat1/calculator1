@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function CoffeeCalculator() {
   const [cups, setCups] = useState("");
@@ -33,12 +34,12 @@ export function CoffeeCalculator() {
       const coffeeOunces = coffeeGrams / 28.35;
       const waterCups = numCups;
       
-      setResult({
-        coffeeGrams,
-        coffeeOunces,
-        waterMl,
-        waterCups,
-      });
+      setResult(sanitizeResult({
+              coffeeGrams,
+              coffeeOunces,
+              waterMl,
+              waterCups,
+            }));
     } else {
       setResult(null);
     }

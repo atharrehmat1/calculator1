@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AmoxicillinPediatricDosageCalculator() {
   const [weight, setWeight] = useState("");
@@ -46,11 +47,11 @@ export function AmoxicillinPediatricDosageCalculator() {
         frequency = "Every 8 hours (3 times daily)";
       }
       
-      setResult({
-        dailyDose,
-        perDose,
-        frequency,
-      });
+      setResult(sanitizeResult({
+              dailyDose,
+              perDose,
+              frequency,
+            }));
     } else {
       setResult(null);
     }

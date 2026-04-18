@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function PerfectPizzaCalculator() {
   const [diameter, setDiameter] = useState("");
@@ -44,14 +45,14 @@ export function PerfectPizzaCalculator() {
       const salt = flour * 0.02;
       const yeast = flour * 0.01;
       
-      setResult({
-        doughWeight,
-        flour,
-        water,
-        salt,
-        yeast,
-        area,
-      });
+      setResult(sanitizeResult({
+              doughWeight,
+              flour,
+              water,
+              salt,
+              yeast,
+              area,
+            }));
     } else {
       setResult(null);
     }

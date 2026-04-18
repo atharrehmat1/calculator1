@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const GALLONS_PER_CCF = 748.052; // 1 CCF (100 cubic feet) = 748.052 gallons
 
@@ -30,11 +31,11 @@ export function CCFToGallonsConversion() {
       const liters = gallons * 3.78541;
       const cubicFeet = ccfValue * 100;
       
-      setResult({
-        gallons: gallons,
-        liters: liters,
-        cubicFeet: cubicFeet,
-      });
+      setResult(sanitizeResult({
+              gallons: gallons,
+              liters: liters,
+              cubicFeet: cubicFeet,
+            }));
     } else {
       setResult(null);
     }

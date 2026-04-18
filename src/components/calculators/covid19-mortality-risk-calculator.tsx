@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function COVID19MortalityRiskCalculator() {
   const [age, setAge] = useState("");
@@ -47,10 +48,10 @@ export function COVID19MortalityRiskCalculator() {
         riskLevel = "High";
       }
       
-      setResult({
-        risk: riskPercent,
-        riskLevel,
-      });
+      setResult(sanitizeResult({
+              risk: riskPercent,
+              riskLevel,
+            }));
     } else {
       setResult(null);
     }

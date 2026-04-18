@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function MilitaryTimeConverter() {
   const [time, setTime] = useState("");
@@ -61,12 +62,12 @@ export function MilitaryTimeConverter() {
     if (format === "12-hour") {
       // Convert 12-hour to military
       const military = convertToMilitary(time);
-      setResult(military);
+      setResult(sanitizeResult(military));
     } else {
       // Convert military to 12-hour
       if (time.length === 4 && /^\d{4}$/.test(time)) {
         const standard = convertTo12Hour(time);
-        setResult(standard);
+        setResult(sanitizeResult(standard));
       } else {
         setResult(null);
       }

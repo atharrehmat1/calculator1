@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X, Plus } from "lucide-react";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function StatisticsCalculator() {
   const [values, setValues] = useState<string[]>([""]);

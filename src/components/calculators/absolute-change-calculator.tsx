@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AbsoluteChangeCalculator() {
   const [initial, setInitial] = useState("");
@@ -28,10 +29,10 @@ export function AbsoluteChangeCalculator() {
       const absoluteChange = finalVal - initialVal;
       const percentageChange = initialVal !== 0 ? (absoluteChange / initialVal) * 100 : 0;
       
-      setResult({
-        absoluteChange,
-        percentageChange,
-      });
+      setResult(sanitizeResult({
+              absoluteChange,
+              percentageChange,
+            }));
     } else {
       setResult(null);
     }

@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BloodSugarConverter() {
   const [value, setValue] = useState("");
@@ -42,10 +43,10 @@ export function BloodSugarConverter() {
         mgdl = val * 18.0182; // Convert mmol/L to mg/dL
       }
       
-      setResult({
-        mgdl,
-        mmoll,
-      });
+      setResult(sanitizeResult({
+              mgdl,
+              mmoll,
+            }));
     } else {
       setResult(null);
     }

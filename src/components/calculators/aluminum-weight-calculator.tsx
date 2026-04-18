@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 const ALUMINUM_DENSITY = 0.0975; // lb/in³ (pounds per cubic inch)
 
@@ -38,7 +39,7 @@ export function AluminumWeightCalculator() {
       if (l > 0 && w > 0 && t > 0) {
         const volume = l * w * t; // cubic inches
         const weight = volume * ALUMINUM_DENSITY;
-        setResult(weight);
+        setResult(sanitizeResult(weight));
       } else {
         setResult(null);
       }
@@ -51,7 +52,7 @@ export function AluminumWeightCalculator() {
         const radius = d / 2;
         const volume = Math.PI * radius * radius * l; // cubic inches
         const weight = volume * ALUMINUM_DENSITY;
-        setResult(weight);
+        setResult(sanitizeResult(weight));
       } else {
         setResult(null);
       }

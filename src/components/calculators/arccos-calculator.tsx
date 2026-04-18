@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ArccosCalculator() {
   const [value, setValue] = useState("");
@@ -26,10 +27,10 @@ export function ArccosCalculator() {
       const radians = Math.acos(val);
       const degrees = (radians * 180) / Math.PI;
       
-      setResult({
-        radians,
-        degrees,
-      });
+      setResult(sanitizeResult({
+              radians,
+              degrees,
+            }));
     } else {
       setResult(null);
     }

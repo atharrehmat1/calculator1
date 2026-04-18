@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BlackScholesCalculator() {
   const [stockPrice, setStockPrice] = useState("");
@@ -58,10 +59,10 @@ export function BlackScholesCalculator() {
       const callPrice = S * N1 - K * Math.exp(-r * T) * N2;
       const putPrice = K * Math.exp(-r * T) * N2Neg - S * N1Neg;
       
-      setResult({
-        callPrice: Math.max(0, callPrice),
-        putPrice: Math.max(0, putPrice),
-      });
+      setResult(sanitizeResult({
+              callPrice: Math.max(0, callPrice),
+              putPrice: Math.max(0, putPrice),
+            }));
     } else {
       setResult(null);
     }

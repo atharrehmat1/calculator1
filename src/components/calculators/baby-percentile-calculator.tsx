@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BabyPercentileCalculator() {
   const [weight, setWeight] = useState("");
@@ -37,11 +38,11 @@ export function BabyPercentileCalculator() {
       const lengthPercentile = Math.min(99, Math.max(1, 50 + (l - 50) * 0.5));
       const headPercentile = Math.min(99, Math.max(1, 50 + (hc - 35) * 2));
       
-      setResult({
-        weightPercentile,
-        lengthPercentile,
-        headPercentile,
-      });
+      setResult(sanitizeResult({
+              weightPercentile,
+              lengthPercentile,
+              headPercentile,
+            }));
     } else {
       setResult(null);
     }

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AcidBaseCalculator() {
   const [ph, setPh] = useState("");
@@ -70,10 +71,10 @@ export function AcidBaseCalculator() {
         compensation = "No compensation needed";
       }
       
-      setResult({
-        disorder,
-        compensation,
-      });
+      setResult(sanitizeResult({
+              disorder,
+              compensation,
+            }));
     } else {
       setResult(null);
     }

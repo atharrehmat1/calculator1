@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ButterCalculator() {
   const [amount, setAmount] = useState("");
@@ -65,14 +66,14 @@ export function ButterCalculator() {
       const grams = tablespoons * 14.175;
       const ounces = tablespoons / 2;
       
-      setResult({
-        sticks,
-        cups,
-        tablespoons,
-        teaspoons,
-        grams,
-        ounces,
-      });
+      setResult(sanitizeResult({
+              sticks,
+              cups,
+              tablespoons,
+              teaspoons,
+              grams,
+              ounces,
+            }));
     } else {
       setResult(null);
     }

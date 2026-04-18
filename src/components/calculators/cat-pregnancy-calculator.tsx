@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function CatPregnancyCalculator() {
   const [matingDate, setMatingDate] = useState("");
@@ -38,11 +39,11 @@ export function CatPregnancyCalculator() {
     const daysRemaining = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     const weeksRemaining = Math.floor(daysRemaining / 7);
 
-    setResult({
-      dueDate: dueDate.toLocaleDateString(),
-      daysRemaining,
-      weeksRemaining,
-    });
+    setResult(sanitizeResult({
+          dueDate: dueDate.toLocaleDateString(),
+          daysRemaining,
+          weeksRemaining,
+        }));
   };
 
   return (

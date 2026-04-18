@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 // Carbon footprint values (kg CO2)
 const BOOK_FOOTPRINT = 4.0; // kg CO2 per physical book
@@ -38,12 +39,12 @@ export function BooksVsEbooksCalculator() {
       // n × (BOOK_FOOTPRINT - EBOOK_FOOTPRINT) = EREADER_FOOTPRINT
       const breakEven = EREADER_FOOTPRINT / (BOOK_FOOTPRINT - EBOOK_FOOTPRINT);
       
-      setResult({
-        physicalBooks: physicalFootprint,
-        ebooks: ebookFootprint,
-        difference: difference,
-        breakEven: breakEven,
-      });
+      setResult(sanitizeResult({
+              physicalBooks: physicalFootprint,
+              ebooks: ebookFootprint,
+              difference: difference,
+              breakEven: breakEven,
+            }));
     } else {
       setResult(null);
     }

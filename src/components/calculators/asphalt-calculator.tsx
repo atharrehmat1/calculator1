@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AsphaltCalculator() {
   const [length, setLength] = useState("");
@@ -32,10 +33,10 @@ export function AsphaltCalculator() {
       const volumeCubicYards = volume / 27;
       // Asphalt density: ~145 lbs per cubic foot = ~2.4 tons per cubic yard
       const tons = volumeCubicYards * 2.4;
-      setResult({
-        volume: volumeCubicYards,
-        tons: tons,
-      });
+      setResult(sanitizeResult({
+              volume: volumeCubicYards,
+              tons: tons,
+            }));
     } else {
       setResult(null);
     }

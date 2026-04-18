@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function ArcLengthCalculator() {
   const [radius, setRadius] = useState("");
@@ -36,7 +37,7 @@ export function ArcLengthCalculator() {
         angleRadians = (a * Math.PI) / 180;
       }
       const arcLength = r * angleRadians;
-      setResult(arcLength);
+      setResult(sanitizeResult(arcLength));
     } else {
       setResult(null);
     }

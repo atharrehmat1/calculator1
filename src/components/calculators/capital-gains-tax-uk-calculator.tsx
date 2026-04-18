@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function CapitalGainsTaxUKCalculator() {
   const [purchasePrice, setPurchasePrice] = useState("");
@@ -36,12 +37,12 @@ export function CapitalGainsTaxUKCalculator() {
       const basicRateTax = taxableGain * 0.10;
       const higherRateTax = taxableGain * 0.20;
       
-      setResult({
-        gain,
-        taxableGain,
-        basicRateTax,
-        higherRateTax,
-      });
+      setResult(sanitizeResult({
+              gain,
+              taxableGain,
+              basicRateTax,
+              higherRateTax,
+            }));
     } else {
       setResult(null);
     }

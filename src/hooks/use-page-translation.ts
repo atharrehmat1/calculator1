@@ -372,7 +372,7 @@ export function usePageTranslation() {
       isCancelled = true; // Cancel any ongoing translation
       
       // If switching to English, restore original text
-      if (currentLanguage === 'english') {
+      if ((currentLanguage as string) === 'english') {
         const translatedElements = document.querySelectorAll('[data-translated]');
         translatedElements.forEach((element) => {
           const originalText = element.getAttribute('data-original-text');

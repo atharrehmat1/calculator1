@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function BlackFridayCalculator() {
   const [originalPrice, setOriginalPrice] = useState("");
@@ -28,10 +29,10 @@ export function BlackFridayCalculator() {
       const savings = price * (discount / 100);
       const discountedPrice = price - savings;
       
-      setResult({
-        discountedPrice,
-        savings,
-      });
+      setResult(sanitizeResult({
+              discountedPrice,
+              savings,
+            }));
     } else {
       setResult(null);
     }

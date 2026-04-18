@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function APRICalculator() {
   const [ast, setAst] = useState("");
@@ -39,10 +40,10 @@ export function APRICalculator() {
         interpretation = "Cirrhosis likely (F4)";
       }
       
-      setResult({
-        apri,
-        interpretation,
-      });
+      setResult(sanitizeResult({
+              apri,
+              interpretation,
+            }));
     } else {
       setResult(null);
     }

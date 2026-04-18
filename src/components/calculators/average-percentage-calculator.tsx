@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AveragePercentageCalculator() {
   const [values, setValues] = useState("");
@@ -22,7 +23,7 @@ export function AveragePercentageCalculator() {
     if (valueArray.length > 0) {
       const sum = valueArray.reduce((acc, val) => acc + val, 0);
       const average = sum / valueArray.length;
-      setResult(average);
+      setResult(sanitizeResult(average));
     } else {
       setResult(null);
     }

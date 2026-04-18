@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { sanitizeResult } from "@/lib/sanitize";
 
 export function AdderallDosageCalculator() {
   const [age, setAge] = useState("");
@@ -47,11 +48,11 @@ export function AdderallDosageCalculator() {
         frequency = "Not recommended under 6 years";
       }
       
-      setResult({
-        startingDose,
-        maxDose,
-        frequency,
-      });
+      setResult(sanitizeResult({
+              startingDose,
+              maxDose,
+              frequency,
+            }));
     } else {
       setResult(null);
     }
