@@ -311,20 +311,20 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
         if (inputType === 'number') {
           let value = parseFloat(rawValue);
           value = isNaN(value) ? 0 : value;
-          
+
           if (input.unitCategory && UNIT_GROUPS[input.unitCategory]) {
             let multiplier = 1;
             const unitName = input.name || input.label || input.key;
             const group = UNIT_GROUPS[input.unitCategory];
             const groupUnits = group.units;
-            
+
             // Re-validate unit to prevent legacy "unit_1" fallback
             let selectedUnit = selectedInputUnits[unitName] || input.defaultUnit;
             if (!groupUnits[selectedUnit]) {
               selectedUnit = group.base;
             }
             const unitData = groupUnits[selectedUnit];
-            
+
             // Handle Dynamic Multipliers (Currency)
             if (group.isDynamic && input.unitCategory === 'Currency' && currencyRates) {
               const baseRate = currencyRates[group.base] || 1;
@@ -338,7 +338,7 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
               value = (value + offset) * multiplier;
             }
           }
-          
+
           inputValues[key] = value;
         } else {
           // For text inputs, preserve the string value
@@ -926,7 +926,7 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
                       // Fallback: split and evaluate each part
                       const parts = result.formula.split(',').map((p: any) => p.trim());
                       if (parts.length > 1) {
-                        value = parts.map((part:any) => evaluateJavaScript(part, scope));
+                        value = parts.map((part: any) => evaluateJavaScript(part, scope));
                       }
                     }
                   } catch {
@@ -948,22 +948,22 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
             // Handle arrays (multiple values from comma-separated expressions)
             let formattedValue: string | number | string[];
             const resultValue = computed[result.key];
-            
+
             let finalValue = resultValue;
             let displayUnit = result.unit || '';
             const resultKey = result.key || result.name || result.label || `result_${result.id}`;
-            
+
             if (result.unitCategory && UNIT_GROUPS[result.unitCategory] && typeof finalValue === 'number' && !isNaN(finalValue)) {
               const group = UNIT_GROUPS[result.unitCategory];
               const groupUnits = group.units;
-              
+
               // Validate unit fallback
               let selectedUnitVal = selectedResultUnits[resultKey] || result.defaultUnit;
               if (!groupUnits[selectedUnitVal]) {
                 selectedUnitVal = group.base;
               }
               const unitData = groupUnits[selectedUnitVal];
-              
+
               // Handle Dynamic Multipliers (Currency)
               if (group.isDynamic && result.unitCategory === 'Currency' && currencyRates) {
                 const baseRate = currencyRates[group.base] || 1;
@@ -1064,13 +1064,13 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
       const rawValue = parseFloat(inputValues[inputName] as string);
       if (!isNaN(rawValue)) {
         const group = UNIT_GROUPS[unitCategory];
-        
+
         let oldUnit: string = selectedInputUnits[inputName] || defaultUnit || group.base;
         if (!group.units[oldUnit]) oldUnit = group.base;
-        
+
         if (oldUnit !== newUnit) {
           let newValue = rawValue;
-          
+
           if (group.isDynamic && unitCategory === 'Currency' && currencyRates) {
             const oldRate = currencyRates[oldUnit] || 1;
             const newRate = currencyRates[newUnit] || 1;
@@ -1083,31 +1083,31 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
               newValue = (baseValue / (newData.multiplier || 1)) - (newData.offset || 0);
             }
           }
-          
+
           newValue = Math.round(newValue * 10000000) / 10000000;
           setInputValues(prev => ({ ...prev, [inputName]: newValue.toString() }));
         }
       }
     }
-    
+
     setSelectedInputUnits(prev => ({ ...prev, [inputName]: newUnit }));
   };
 
   const handleSubCalcInputUnitChange = (subId: string, inputName: string, newUnit: string, unitCategory?: string, defaultUnit?: string) => {
     const key = `sub_${subId}_${inputName}`;
     const currentValue = (subCalcInputValues[subId] || {})[inputName];
-    
+
     if (unitCategory && UNIT_GROUPS[unitCategory] && currentValue !== undefined && currentValue !== '') {
       const rawValue = parseFloat(currentValue);
       if (!isNaN(rawValue)) {
         const group = UNIT_GROUPS[unitCategory];
-        
+
         let oldUnit: string = selectedInputUnits[key] || defaultUnit || group.base;
         if (!group.units[oldUnit]) oldUnit = group.base;
-        
+
         if (oldUnit !== newUnit) {
           let newValue = rawValue;
-          
+
           if (group.isDynamic && unitCategory === 'Currency' && currencyRates) {
             const oldRate = currencyRates[oldUnit] || 1;
             const newRate = currencyRates[newUnit] || 1;
@@ -1120,7 +1120,7 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
               newValue = (baseValue / (newData.multiplier || 1)) - (newData.offset || 0);
             }
           }
-          
+
           newValue = Math.round(newValue * 10000000) / 10000000;
           setSubCalcInputValues(prev => ({
             ...prev,
@@ -1129,7 +1129,7 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
         }
       }
     }
-    
+
     setSelectedInputUnits(prev => ({ ...prev, [key]: newUnit }));
   };
 
@@ -1144,12 +1144,12 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
     const performLocalization = async () => {
       try {
         let countryCode = '';
-        
+
         // 1. Try to get cached country code to prevent hitting API repeatedly
         try {
           const cached = localStorage.getItem('user_country');
           if (cached) countryCode = cached;
-        } catch (e) {}
+        } catch (e) { }
 
         // 2. Fetch from IP API if not cached (best for precision, e.g. en-US in Pakistan)
         if (!countryCode) {
@@ -1160,7 +1160,7 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
               const code = text.trim().toUpperCase();
               if (code && code.length === 2) {
                 countryCode = code;
-                try { localStorage.setItem('user_country', code); } catch (e) {}
+                try { localStorage.setItem('user_country', code); } catch (e) { }
               }
             }
           } catch (e) {
@@ -1193,72 +1193,72 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
           if (!group) return;
 
           if (itemCategory === 'Currency' && targetCurrency && group.units[targetCurrency]) {
-             overrideUnit = targetCurrency;
+            overrideUnit = targetCurrency;
           } else if (isImperial && IMPERIAL_OVERRIDES[itemCategory] && group.units[IMPERIAL_OVERRIDES[itemCategory]]) {
-             overrideUnit = IMPERIAL_OVERRIDES[itemCategory];
+            overrideUnit = IMPERIAL_OVERRIDES[itemCategory];
           }
 
           const activeUnit = currentValue || defaultUnit || group.base;
           if (overrideUnit && overrideUnit !== activeUnit) {
-             callback(overrideUnit);
+            callback(overrideUnit);
           }
         };
 
         const timer = setTimeout(() => {
           let inputs: any[] = [];
-          try { inputs = Array.isArray(calculator.inputs) ? calculator.inputs : JSON.parse(calculator.inputs || "[]"); } catch {}
+          try { inputs = Array.isArray(calculator.inputs) ? calculator.inputs : JSON.parse(calculator.inputs || "[]"); } catch { }
           inputs.forEach(input => {
             const name = input.name || input.label || input.key || `input_${input.id || Math.random()}`;
             if (name && input.unitCategory) {
-              applyLocalization(input.unitCategory, input.defaultUnit, selectedInputUnits[name], 
+              applyLocalization(input.unitCategory, input.defaultUnit, selectedInputUnits[name],
                 (newUnit) => handleInputUnitChange(name, newUnit, input.unitCategory, input.defaultUnit));
             }
           });
 
           let radios: any[] = [];
-          try { radios = Array.isArray(calculator.radio_options) ? calculator.radio_options : JSON.parse((calculator.radio_options as any) || "[]"); } catch {}
+          try { radios = Array.isArray(calculator.radio_options) ? calculator.radio_options : JSON.parse((calculator.radio_options as any) || "[]"); } catch { }
           radios.forEach(opt => {
             (opt.inputs || []).forEach((input: any, idx: number) => {
               const name = input.name || input.label || input.key || `input_${input.id || idx}`;
               if (name && input.unitCategory) {
-                applyLocalization(input.unitCategory, input.defaultUnit, selectedInputUnits[name], 
+                applyLocalization(input.unitCategory, input.defaultUnit, selectedInputUnits[name],
                   (newUnit) => handleInputUnitChange(name, newUnit, input.unitCategory, input.defaultUnit));
               }
             });
           });
 
           let subs: any[] = [];
-          try { subs = Array.isArray(calculator.sub_calculators) ? calculator.sub_calculators : JSON.parse(calculator.sub_calculators || "[]"); } catch {}
+          try { subs = Array.isArray(calculator.sub_calculators) ? calculator.sub_calculators : JSON.parse(calculator.sub_calculators || "[]"); } catch { }
           subs.forEach(sub => {
             (sub.inputs || []).forEach((input: any, idx: number) => {
               const name = input.name || input.label || input.key || `input_${input.id || idx}`;
               if (name && input.unitCategory) {
-                applyLocalization(input.unitCategory, input.defaultUnit, selectedInputUnits[`sub_${sub.id}_${name}`], 
+                applyLocalization(input.unitCategory, input.defaultUnit, selectedInputUnits[`sub_${sub.id}_${name}`],
                   (newUnit) => handleSubCalcInputUnitChange(sub.id, name, newUnit, input.unitCategory, input.defaultUnit));
               }
             });
           });
 
           let resultsArr: any[] = [];
-          try { resultsArr = Array.isArray(calculator.results) ? calculator.results : JSON.parse(calculator.results || "[]"); } catch {}
+          try { resultsArr = Array.isArray(calculator.results) ? calculator.results : JSON.parse(calculator.results || "[]"); } catch { }
           resultsArr.forEach((result, idx) => {
             const key = result.key || result.label || `res_${idx}`;
             if (key && result.unitCategory) {
-              applyLocalization(result.unitCategory, result.defaultUnit, selectedResultUnits[key], 
+              applyLocalization(result.unitCategory, result.defaultUnit, selectedResultUnits[key],
                 (newUnit) => handleResultUnitChange(key, newUnit));
             }
           });
 
           setHasLocalized(true);
         }, 50); // slight delay to allow first render
-          
+
         return () => clearTimeout(timer);
       } catch (e) {
         console.warn("Localization failed", e);
         setHasLocalized(true);
       }
     };
-    
+
     performLocalization();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1323,16 +1323,16 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
         const inputName = input.name || input.label || input.key;
         const raw = vals[inputName] || '';
         const key = input.key || inputName;
-        
+
         if (input.type === 'number' || input.type === 'integer' || input.type === 'percent') {
           let v = parseFloat(raw);
           v = isNaN(v) ? 0 : v;
-          
+
           if (input.unitCategory && UNIT_GROUPS[input.unitCategory]) {
             const group = UNIT_GROUPS[input.unitCategory];
             const selectedUnit = (selectedInputUnits[`sub_${sub.id}_${inputName}`]) || input.defaultUnit || group.base;
             const unitData = group.units[selectedUnit] || group.units[group.base];
-            
+
             if (group.isDynamic && input.unitCategory === 'Currency' && currencyRates) {
               const baseRate = currencyRates[group.base] || 1;
               const targetRate = currencyRates[selectedUnit] || currencyRates[group.base] || 1;
@@ -1369,12 +1369,12 @@ export default function CalculatorClient({ categorySlug, calculatorSlug }: Calcu
           let displayUnit = result.unit || '';
           const resultKey = `sub_${sub.id}_${result.key || result.label}`;
           const key = result.key || result.label;
-          
+
           if (result.unitCategory && UNIT_GROUPS[result.unitCategory] && typeof value === 'number') {
             const group = UNIT_GROUPS[result.unitCategory];
             const selectedUnitVal = selectedResultUnits[resultKey] || result.defaultUnit || group.base;
             const unitData = group.units[selectedUnitVal] || group.units[group.base];
-            
+
             if (group.isDynamic && result.unitCategory === 'Currency' && currencyRates) {
               const baseRate = currencyRates[group.base] || 1;
               const targetRate = currencyRates[selectedUnitVal] || currencyRates[group.base] || 1;
