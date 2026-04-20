@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: 'Calculator1.org',
   description: 'Over 3,700 free calculators in one place.',
   icons: {
-    icon: '/favicon.png',
+    icon: '/favicon.png?v=1',
   },
   robots: {
     index: false,

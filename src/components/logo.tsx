@@ -5,7 +5,7 @@ export function Logo({ className }: { className?: string }) {
   return (
     <div className={cn("relative", className)}>
       <Image
-        src="/icon-light.png"
+        src="/icon-light.png?v=1"
         alt="Logo Calculator1.org"
         className="dark:hidden object-contain"
         priority
@@ -13,7 +13,7 @@ export function Logo({ className }: { className?: string }) {
         height={80}
       />
       <Image
-        src="/icon-dark.png"
+        src="/icon-dark.png?v=1"
         alt="Logo Calculator1.org"
         className="hidden dark:block object-contain"
         priority
