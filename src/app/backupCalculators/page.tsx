@@ -13,18 +13,18 @@ export const revalidate = 0;
 async function getCalculatorsFromDatabase(): Promise<Calculator[]> {
   try {
     // Fetch all calculators from the database API
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
     const response = await fetch(`${API_BASE_URL}/calculators`, {
       cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch calculators: ${response.status}`);
     }
-    
+
     const calculators: Calculator[] = await response.json();
     return calculators;
   } catch (error) {

@@ -1,25 +1,44 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 import CalculatorClient from './calculator-client';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nextjs-app.onrender.com';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://calculator1.org';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
 
 async function fetchCalculatorBySlug(slug: string, categorySlug: string) {
   try {
+    // 1. Try to fetch with category context first (correct structure)
     const categoriesRes = await fetch(`${API_BASE_URL}/categories`, { cache: 'no-store' });
-    if (!categoriesRes.ok) return null;
-    const categories = await categoriesRes.json();
-    const category = categories.find((c: any) => c.slug === categorySlug);
+    if (categoriesRes.ok) {
+      const categories = await categoriesRes.json();
+      const category = categories.find((c: any) => c.slug === categorySlug);
 
-    if (!category) return null;
+      if (category) {
+        const calcRes = await fetch(
+          `${API_BASE_URL}/calculators/slug/${slug}?category_id=${category.id}`,
+          { cache: 'no-store' }
+        );
+        if (calcRes.ok) return await calcRes.json();
+      } else {
+        console.warn(`[Metadata] Category not found for slug: ${categorySlug}. Trying fallback fetch by calculator slug only.`);
+      }
+    }
 
-    const calcRes = await fetch(
-      `${API_BASE_URL}/calculators/slug/${slug}?category_id=${category.id}`,
-      { cache: 'no-store' }
-    );
-    if (!calcRes.ok) return null;
-    return calcRes.json();
-  } catch {
+    // 2. Fallback: Try to fetch by slug directly (the backend might support this or we search manually)
+    // Looking at the admin panel's list logic, sometimes slugs can be fetched regardless of category
+    const allCalcsRes = await fetch(`${API_BASE_URL}/calculators`, { cache: 'no-store' });
+    if (allCalcsRes.ok) {
+      const allCalculators = await allCalcsRes.json();
+      const found = allCalculators.find((c: any) => c.slug === slug);
+      if (found) {
+        console.log(`[Metadata] Found calculator via fallback for slug: ${slug}`);
+        return found;
+      }
+    }
+
+    console.error(`[Metadata] Failed to find calculator for slug "${slug}" in category "${categorySlug}". API URL: ${API_BASE_URL}`);
+    return null;
+  } catch (error) {
+    console.error(`[Metadata] Error fetching calculator metadata:`, error);
     return null;
   }
 }
