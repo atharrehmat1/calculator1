@@ -1,11 +1,8 @@
 
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Search, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { CategoryNavigation } from '@/components/category-navigation';
 import { PopularCalculators } from '@/components/popular-calculators';
 import { AdvancedCalculator } from '@/components/advanced-calculator';
