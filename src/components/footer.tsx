@@ -29,10 +29,11 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4 font-headline">About Us</h4>
             <nav className="flex flex-col gap-2 text-sm">
-              <Link href="#" className="text-muted-foreground hover:text-foreground">About</Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground">Contact</Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground">Support</Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground">Privacy Policy</Link>
+              <Link href="/about" className="text-muted-foreground hover:text-foreground">About</Link>
+              <Link href="/contact" className="text-muted-foreground hover:text-foreground">Contact</Link>
+              <Link href="/support" className="text-muted-foreground hover:text-foreground">Support</Link>
+              <Link href="/privacy-policy" className="text-muted-foreground hover:text-foreground">Privacy Policy</Link>
+              <Link href="/terms-of-service" className="text-muted-foreground hover:text-foreground">Terms of Service</Link>
             </nav>
           </div>
           <div>
@@ -45,7 +46,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t pt-6 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Calculator1.org. All Rights Reserved.
+          © {new Date().getFullYear()} Calculator1.org. All Rights Reserved By @Hill-Digitals.
         </div>
       </div>
     </footer>
