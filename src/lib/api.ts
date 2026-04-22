@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.calculator1.org/api';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.calculator1.org/api';
 
 // Radio option type for calculators with multiple modes
 export interface RadioOption {
@@ -52,7 +52,7 @@ export const api = {
       const url = queryParams.toString() ? `${API_BASE_URL}/calculators?${queryParams.toString()}` : `${API_BASE_URL}/calculators`;
 
       try {
-        const response = await fetch(url, { credentials: 'include' });
+        const response = await fetch(url, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to fetch calculators: ${response.status} ${response.statusText}`);
@@ -65,7 +65,7 @@ export const api = {
       }
     },
     getById: async (id: number): Promise<Calculator> => {
-      const response = await fetch(`${API_BASE_URL}/calculators/${id}`);
+      const response = await fetch(`${API_BASE_URL}/calculators/${id}`, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch calculator');
       return response.json();
     },
@@ -77,7 +77,7 @@ export const api = {
       const url = queryParams.toString()
         ? `${API_BASE_URL}/calculators/slug/${slug}?${queryParams.toString()}`
         : `${API_BASE_URL}/calculators/slug/${slug}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch calculator');
       return response.json();
     },
@@ -87,7 +87,7 @@ export const api = {
       const url = `${API_BASE_URL}/categories`;
 
       try {
-        const response = await fetch(url, { credentials: 'include' });
+        const response = await fetch(url, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
@@ -105,7 +105,7 @@ export const api = {
       const url = categoryId ? `${API_BASE_URL}/subcategories?category_id=${categoryId}` : `${API_BASE_URL}/subcategories`;
 
       try {
-        const response = await fetch(url, { credentials: 'include' });
+        const response = await fetch(url, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error(`Failed to fetch subcategories: ${response.status} ${response.statusText}`);
@@ -121,9 +121,7 @@ export const api = {
   calculatorInteractions: {
     // Likes
     getLikes: async (calculatorId: number) => {
-      const response = await fetch(`${API_BASE_URL}/calculator-interactions/likes/${calculatorId}`, {
-        credentials: 'include',
-      });
+      const response = await fetch(`${API_BASE_URL}/calculator-interactions/likes/${calculatorId}`, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch likes');
       return response.json();
     },
@@ -137,9 +135,7 @@ export const api = {
     },
     // Ratings
     getRatings: async (calculatorId: number) => {
-      const response = await fetch(`${API_BASE_URL}/calculator-interactions/ratings/${calculatorId}`, {
-        credentials: 'include',
-      });
+      const response = await fetch(`${API_BASE_URL}/calculator-interactions/ratings/${calculatorId}`, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch ratings');
       return response.json();
     },
@@ -161,7 +157,7 @@ export const api = {
       const url = params.toString()
         ? `${API_BASE_URL}/calculator-interactions/comments/${calculatorId}?${params.toString()}`
         : `${API_BASE_URL}/calculator-interactions/comments/${calculatorId}`;
-      const response = await fetch(url, { credentials: 'include' });
+      const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch comments');
       return response.json();
     },
@@ -310,9 +306,7 @@ export const api = {
       return result;
     },
     getLanguages: async () => {
-      const response = await fetch(`${API_BASE_URL}/translation/languages`, {
-        credentials: 'include',
-      });
+      const response = await fetch(`${API_BASE_URL}/translation/languages`, { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch languages');
       }

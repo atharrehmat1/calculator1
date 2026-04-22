@@ -1,8 +1,8 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 import CalculatorClient from './calculator-client';
+import { API_BASE_URL } from '@/lib/api';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://calculator1.org';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
 
 async function fetchCalculatorBySlug(slug: string, categorySlug: string) {
   try {
