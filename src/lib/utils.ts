@@ -9,7 +9,7 @@ export function stripHtml(html: string | null | undefined): string {
   if (!html) return '';
   // Remove HTML tags
   const stripped = html.replace(/<[^>]*>/g, '');
-  
+
   // Decode common HTML entities
   return stripped
     .replace(/&nbsp;/g, ' ')

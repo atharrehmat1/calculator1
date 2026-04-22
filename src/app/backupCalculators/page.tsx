@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { DownloadBackupButton } from '@/components/download-backup-button';
 import type { Calculator } from '@/lib/api';
+import { API_BASE_URL } from '@/lib/api';
 
 // Ensure this page is always rendered dynamically
 export const dynamic = 'force-dynamic';
@@ -13,7 +14,6 @@ export const revalidate = 0;
 async function getCalculatorsFromDatabase(): Promise<Calculator[]> {
   try {
     // Fetch all calculators from the database API
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
     const response = await fetch(`${API_BASE_URL}/calculators`, {
       cache: 'no-store',
       headers: {
